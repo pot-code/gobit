@@ -1,0 +1,57 @@
+package db
+
+import (
+	"fmt"
+
+	gobit "github.com/pot-code/gobit/pkg"
+	"go.uber.org/zap"
+)
+
+// DBConfig TODO
+type DBConfig struct {
+	Driver   string   // driver name
+	Host     string   // server host
+	MaxConn  int32    // maximum opening connections number
+	Password string   // db password
+	Port     int      // server port
+	Protocol string   // connection protocol, eg.tcp
+	Query    []string // DSN query parameter
+	Schema   string   // use schema
+	User     string   // username
+	Debug    bool
+}
+
+// GetSqlDBConnection create a DB connection from given config
+func GetSqlDBConnection(cfg *DBConfig, logger *zap.Logger) (conn TransactionalDB, err error) {
+	driver := cfg.Driver
+	switch driver {
+	case gobit.DriverMysqlDB:
+		conn, err = NewMySQLConn(cfg, logger)
+	case gobit.DriverPostgresSQL:
+		conn, err = NewPostgreSQLConn(cfg, logger)
+	default:
+		err = fmt.Errorf("unsupported driver: %s", driver)
+	}
+	return
+}
+
+type SqlxDBConfig struct {
+	DSN     string
+	Driver  string
+	MaxConn int32 // maximum opening connections number
+	Debug   bool
+}
+
+// GetSqlDbConnection create a DB connection from given config
+func GetSqlxDB(cfg *DBConfig, logger *zap.Logger) (SqlxInterface, error) {
+	xconfig := &SqlxDBConfig{Driver: cfg.Driver, MaxConn: cfg.MaxConn, Debug: cfg.Debug}
+	if cfg.Driver == gobit.DriverPostgresSQL {
+		xconfig.Driver = "pgx"
+	}
+	dsn, err := GetDSN(cfg)
+	if err != nil {
+		return nil, err
+	}
+	xconfig.DSN = dsn
+	return NewSqlxDB(xconfig, logger)
+}

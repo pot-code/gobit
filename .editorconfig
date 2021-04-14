@@ -1,0 +1,10 @@
+[root]
+root = true
+indent_size = 2
+indent_style = space
+tab_width = 2
+
+[*.yaml]
+indent_style=space
+indent_size = 4
+tab_width = 4
