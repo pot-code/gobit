@@ -42,7 +42,7 @@ type SqlxDBConfig struct {
 	Debug   bool
 }
 
-// GetSqlDbConnection create a DB connection from given config
+// GetSqlxDB create a sqlx instance
 func GetSqlxDB(cfg *DBConfig, logger *zap.Logger) (SqlxInterface, error) {
 	xconfig := &SqlxDBConfig{Driver: cfg.Driver, MaxConn: cfg.MaxConn, Debug: cfg.Debug}
 	if cfg.Driver == gobit.DriverPostgresSQL {

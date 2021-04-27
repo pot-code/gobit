@@ -12,7 +12,6 @@ type PaginationOption struct {
 	LangKey gobit.AppContextKey
 }
 
-// VerifyRefreshToken validate normal JWT
 func Pagination(v *validate.GoValidatorV10, options ...PaginationOption) echo.MiddlewareFunc {
 	key := gobit.DefaultPaginationEchoKey
 	langKey := gobit.DefaultLangContextKey

@@ -9,7 +9,7 @@ import (
 func GetVerboseStackTrace(depth int, st StackTracer) string {
 	frames := st.StackTrace()
 	if depth > 0 {
-		frames = frames[:depth] // WARN: set 1 to skip empty line
+		frames = frames[:depth]
 	}
 	return fmt.Sprintf("%+v", frames)
 }

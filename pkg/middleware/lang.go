@@ -11,7 +11,6 @@ type ParseAcceptLanguageOption struct {
 	ContextKey gobit.AppContextKey
 }
 
-// VerifyRefreshToken validate normal JWT
 func ParseAcceptLanguage(lang []language.Tag, options ...ParseAcceptLanguageOption) echo.MiddlewareFunc {
 	key := gobit.DefaultLangContextKey
 	matcher := language.NewMatcher(lang)
