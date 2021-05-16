@@ -1,4 +1,4 @@
-package util
+package api
 
 import (
 	"context"
@@ -8,10 +8,8 @@ import (
 	"net/http/pprof"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
-	gobit "github.com/pot-code/gobit/pkg"
 	"github.com/pot-code/gobit/pkg/validate"
 	"go.uber.org/zap"
 )
@@ -33,35 +31,6 @@ type Route struct {
 	Path        string
 	Handler     echo.HandlerFunc
 	Middlewares []echo.MiddlewareFunc
-}
-
-type Pagination struct {
-	Limit  int       `json:"limit" query:"limit" validate:"min=0,max=200"`
-	Cursor time.Time `json:"cursor" query:"cursor" validate:"required"`
-}
-
-type _Pagination struct {
-	Total      int         `json:"total"`
-	NextCursor interface{} `json:"next_cursor"`
-}
-
-type PaginationResult struct {
-	Data        interface{} `json:"data"`
-	_Pagination `json:"pagination"`
-}
-
-// NewPaginationResult create pagination response with pagination meta data
-//
-// total: total number of data
-//
-// next: anchor point to fetch next page data
-func NewPaginationResult(data interface{}, total int, next interface{}) *PaginationResult {
-	return &PaginationResult{
-		Data: data,
-		_Pagination: _Pagination{
-			total, next,
-		},
-	}
 }
 
 func CreateEndpoint(app *echo.Echo, def *Endpoint) {
@@ -146,7 +115,7 @@ func RegisterProfileEndpoints(app *echo.Echo) {
 }
 
 func ValidateFailedResponse(c echo.Context, err *validate.ValidationError) error {
-	return c.JSON(http.StatusBadRequest, NewRESTValidationError(gobit.ErrFailedValidate.Error(), err))
+	return c.JSON(http.StatusBadRequest, NewRESTValidationError(ErrFailedValidate.Error(), err))
 }
 
 func BadRequestResponse(c echo.Context, err error) error {
@@ -163,12 +132,12 @@ func StatusResponse(c echo.Context, code int) error {
 
 func BindErrorResponse(c echo.Context, err error) error {
 	if he, ok := err.(*echo.HTTPError); ok {
-		return c.JSON(http.StatusBadRequest, NewRESTBindingError(gobit.ErrFailedBinding.Error(), he.Message, nil))
+		return c.JSON(http.StatusBadRequest, NewRESTBindingError(ErrFailedBinding.Error(), he.Message, nil))
 	}
 	if be, ok := err.(*echo.BindingError); ok {
-		return c.JSON(http.StatusBadRequest, NewRESTBindingError(gobit.ErrFailedBinding.Error(), be.Message, be))
+		return c.JSON(http.StatusBadRequest, NewRESTBindingError(ErrFailedBinding.Error(), be.Message, be))
 	}
-	return c.JSON(http.StatusBadRequest, NewRESTStandardError(gobit.ErrFailedBinding.Error()))
+	return c.JSON(http.StatusBadRequest, NewRESTStandardError(ErrFailedBinding.Error()))
 }
 
 func WithContextValue(c echo.Context, key interface{}, val interface{}) {

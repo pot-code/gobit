@@ -7,7 +7,6 @@ import (
 
 	// mysql driver
 	_ "github.com/go-sql-driver/mysql"
-	gobit "github.com/pot-code/gobit/pkg"
 	"go.uber.org/zap"
 )
 
@@ -19,18 +18,11 @@ type mysqlConn struct {
 	logger *zap.Logger
 }
 
-// mysqlTx transaction wrapper
-type mysqlTx struct {
-	tx     *sql.Tx
-	logger *zap.Logger
-}
-
 // assertion
-var _ TransactionalDB = &mysqlConn{}
-var _ TransactionalDB = &mysqlTx{}
+var _ SqlDB = &mysqlConn{}
 
 // NewMySQLConn Returns a MySQL connection pool
-func NewMySQLConn(cfg *DBConfig, logger *zap.Logger) (TransactionalDB, error) {
+func NewMySQLConn(cfg *DBConfig, logger *zap.Logger) (SqlDB, error) {
 	dsn, _ := GetDSN(cfg)
 	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -41,7 +33,7 @@ func NewMySQLConn(cfg *DBConfig, logger *zap.Logger) (TransactionalDB, error) {
 }
 
 // BeginTx start a new transaction context
-func (mw *mysqlConn) BeginTx(ctx context.Context, opts *TxOptions) (TransactionalDB, error) {
+func (mw *mysqlConn) BeginTx(ctx context.Context, opts *TxOptions) (SqlTx, error) {
 	logger := mw.logger
 	startTime := time.Now()
 
@@ -55,14 +47,6 @@ func (mw *mysqlConn) BeginTx(ctx context.Context, opts *TxOptions) (Transactiona
 		return nil, &SqlDBError{Err: err}
 	}
 	return &mysqlTx{tx, logger}, err
-}
-
-func (mw *mysqlConn) Commit(ctx context.Context) error {
-	return nil
-}
-
-func (mw *mysqlConn) Rollback(ctx context.Context) error {
-	return nil
 }
 
 func (mw *mysqlConn) Ping(ctx context.Context) error {
@@ -105,9 +89,13 @@ func (mw *mysqlConn) QueryContext(ctx context.Context, query string, args ...int
 	return rows, err
 }
 
-func (mt *mysqlTx) BeginTx(ctx context.Context, opts *TxOptions) (TransactionalDB, error) {
-	return nil, gobit.ErrReopenTransaction
+// mysqlTx transaction wrapper
+type mysqlTx struct {
+	tx     *sql.Tx
+	logger *zap.Logger
 }
+
+var _ SqlTx = &mysqlTx{}
 
 func (mt *mysqlTx) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	logger := mt.logger
@@ -166,10 +154,6 @@ func (mt *mysqlTx) Rollback(ctx context.Context) error {
 }
 
 func (mt *mysqlTx) Ping(ctx context.Context) error {
-	return nil
-}
-
-func (mt *mysqlTx) Close(ctx context.Context) error {
 	return nil
 }
 

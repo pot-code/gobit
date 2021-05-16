@@ -22,7 +22,7 @@ type DBConfig struct {
 }
 
 // GetSqlDBConnection create a DB connection from given config
-func GetSqlDBConnection(cfg *DBConfig, logger *zap.Logger) (conn TransactionalDB, err error) {
+func GetSqlDBConnection(cfg *DBConfig, logger *zap.Logger) (conn SqlDB, err error) {
 	driver := cfg.Driver
 	switch driver {
 	case gobit.DriverMysqlDB:

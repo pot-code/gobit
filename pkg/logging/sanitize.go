@@ -1,18 +1,6 @@
-package util
+package logging
 
-import (
-	"fmt"
-
-	gobit "github.com/pot-code/gobit/pkg"
-)
-
-func GetVerboseStackTrace(depth int, st StackTracer) string {
-	frames := st.StackTrace()
-	if depth > 0 {
-		frames = frames[:depth]
-	}
-	return fmt.Sprintf("%+v", frames)
-}
+import gobit "github.com/pot-code/gobit/pkg"
 
 func SanitizeString(val string) string {
 	if len([]rune(val)) > gobit.SanitizeStringLength {

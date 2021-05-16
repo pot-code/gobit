@@ -24,14 +24,20 @@ type SqlRows interface {
 	Close() error
 }
 
-// TransactionalDB Universal SQL operation interface, to eliminate the gap between different SQL drivers
-type TransactionalDB interface {
+// SqlDB Universal SQL operation interface, to eliminate the gap between different SQL drivers
+type SqlDB interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	QueryContext(ctx context.Context, query string, args ...interface{}) (SqlRows, error)
-	BeginTx(ctx context.Context, opts *TxOptions) (TransactionalDB, error)
+	BeginTx(ctx context.Context, opts *TxOptions) (SqlTx, error)
+	Close(ctx context.Context) error
+	Ping(ctx context.Context) error
+}
+
+type SqlTx interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (SqlRows, error)
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
-	Close(ctx context.Context) error
 	Ping(ctx context.Context) error
 }
 

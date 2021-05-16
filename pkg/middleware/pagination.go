@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/labstack/echo/v4"
 	gobit "github.com/pot-code/gobit/pkg"
+	"github.com/pot-code/gobit/pkg/api"
 	"github.com/pot-code/gobit/pkg/util"
 	"github.com/pot-code/gobit/pkg/validate"
 )
@@ -12,7 +13,7 @@ type PaginationOption struct {
 	LangKey gobit.AppContextKey
 }
 
-func Pagination(v *validate.GoValidatorV10, options ...PaginationOption) echo.MiddlewareFunc {
+func CursorPagination(v *validate.GoValidatorV10, options ...PaginationOption) echo.MiddlewareFunc {
 	key := gobit.DefaultPaginationEchoKey
 	langKey := gobit.DefaultLangContextKey
 	if len(options) > 0 {
@@ -27,13 +28,13 @@ func Pagination(v *validate.GoValidatorV10, options ...PaginationOption) echo.Mi
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			lang := c.Request().Context().Value(langKey).(string)
-			pagination := new(util.Pagination)
+			pagination := new(util.CursorPaginationReq)
 			if err := c.Bind(pagination); err != nil {
-				return util.BadRequestResponse(c, err)
+				return api.BadRequestResponse(c, err)
 			}
 
 			if err := v.Struct(pagination, lang); err != nil {
-				return util.ValidateFailedResponse(c, err)
+				return api.ValidateFailedResponse(c, err)
 			}
 			c.Set(key, pagination)
 			return next(c)

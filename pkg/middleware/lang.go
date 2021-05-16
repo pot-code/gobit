@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/labstack/echo/v4"
 	gobit "github.com/pot-code/gobit/pkg"
-	"github.com/pot-code/gobit/pkg/util"
+	"github.com/pot-code/gobit/pkg/api"
 	"golang.org/x/text/language"
 )
 
@@ -25,7 +25,7 @@ func ParseAcceptLanguage(lang []language.Tag, options ...ParseAcceptLanguageOpti
 			lang := c.Request().Header.Get("Accept-Language")
 			tag, _ := language.MatchStrings(matcher, lang)
 			base, _ := tag.Base()
-			util.WithContextValue(c, key, base.String())
+			api.WithContextValue(c, key, base.String())
 			return next(c)
 		}
 	}

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	gobit "github.com/pot-code/gobit/pkg"
 )
 
 // RedisClient .
@@ -76,7 +75,7 @@ func (rdb *RedisClient) Ping(ctx context.Context) error {
 	if r, err := cmd.Result(); err != nil {
 		return err
 	} else if r != "PONG" {
-		return gobit.ErrInternalError
+		return ErrPongFailed
 	}
 	return nil
 }

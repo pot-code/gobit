@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	gobit "github.com/pot-code/gobit/pkg"
+	"github.com/pot-code/gobit/pkg/util"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -21,23 +23,13 @@ type LoggerConfig struct {
 	AppID    string
 }
 
-// NewLogger returns a zap logger instance based on given options.
-// It's hard to extract a common interface for a structured logger like zap,
-// since the arguments of the log function should be of zap.Field type,
-// it won't be nice to implement another zap
+// NewLogger returns a zap logger
 func NewLogger(cfg *LoggerConfig) (*zap.Logger, error) {
 	var (
 		core zapcore.Core
 		err  error
 	)
-	// switch cfg.Env {
-	// case gobit.EnvDevelop:
-	// 	core, err = createDevLogger(cfg)
-	// case gobit.EnvProduction:
 	core, err = createProductionLogger(cfg)
-	// default:
-	// 	core, err = createDevLogger(cfg)
-	// }
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logger core::%w", err)
 	}
@@ -67,20 +59,6 @@ func getZapLoggingLevel(level string) (zlevel zapcore.Level) {
 	}
 	return
 }
-
-// func createDevLogger(cfg *LoggerConfig) (zapcore.Core, error) {
-// 	logEnabler := getLevelEnabler(cfg)
-// 	encoderConfig := zap.NewDevelopmentEncoderConfig()
-// 	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-// 	encoderConfig.CallerKey = "log.position"
-// 	encoder := zapcore.NewConsoleEncoder(encoderConfig)
-
-// 	if cfg.FilePath != "" {
-// 		output, err := getFileSyncer(cfg)
-// 		return zapcore.NewCore(encoder, output, logEnabler), err
-// 	}
-// 	return zapcore.NewCore(encoder, os.Stderr, logEnabler), nil
-// }
 
 func createProductionLogger(cfg *LoggerConfig) (zapcore.Core, error) {
 	logEnabler := getLevelEnabler(cfg)
@@ -125,4 +103,43 @@ func InjectContext(ctx context.Context, logger *zap.Logger) context.Context {
 // ExtractFromContext try to extract logger from context
 func ExtractFromContext(ctx context.Context) *zap.Logger {
 	return ctx.Value(gobit.DefaultLoggingContextKey).(*zap.Logger)
+}
+
+type ZapErrorWrapper struct {
+	depth int
+	err   error
+}
+
+// NewZapErrorWrapper create wrapper object that implements the `MarshalLogObject` protocol
+//
+// depth: set stack trace depth if the error type supports it
+//
+// err: the error to be wrapped
+func NewZapErrorWrapper(err error, depth int) *ZapErrorWrapper {
+	return &ZapErrorWrapper{depth, err}
+}
+
+func (te ZapErrorWrapper) Unwrap() error {
+	return te.err
+}
+
+func (te ZapErrorWrapper) Error() string {
+	if te.err != nil {
+		return te.err.Error()
+	}
+	return "traceable error"
+}
+
+func (te ZapErrorWrapper) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	err := te.err
+	if ste, ok := err.(util.StackTracer); ok {
+		trace := util.GetVerboseStackTrace(te.depth, ste)
+		enc.AddString("stack_trace", trace)
+
+		cause := errors.Cause(err)
+		enc.AddString("message", cause.Error())
+	} else {
+		enc.AddString("message", err.Error())
+	}
+	return nil
 }

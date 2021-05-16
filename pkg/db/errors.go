@@ -1,7 +1,14 @@
 package db
 
 import (
+	"errors"
+
 	"go.uber.org/zap/zapcore"
+)
+
+var (
+	ErrReopenTransaction = errors.New("no nested transaction")
+	ErrPongFailed        = errors.New("failed to get pong")
 )
 
 type SqlDBError struct {

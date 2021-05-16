@@ -8,7 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	gobit "github.com/pot-code/gobit/pkg"
-	"github.com/pot-code/gobit/pkg/util"
+	"github.com/pot-code/gobit/pkg/api"
 )
 
 // RefreshTokenOption ...
@@ -114,7 +114,7 @@ func VerifyAccessToken(options ValidateTokenOption) echo.MiddlewareFunc {
 				return secret, nil
 			})
 			if err == nil {
-				util.WithContextValue(c, contextKey, token.Claims)
+				api.WithContextValue(c, contextKey, token.Claims)
 				return next(c)
 			}
 			return c.NoContent(http.StatusUnauthorized)

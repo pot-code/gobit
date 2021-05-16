@@ -5,9 +5,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	gobit "github.com/pot-code/gobit/pkg"
+	"github.com/pot-code/gobit/pkg/api"
 	"github.com/pot-code/gobit/pkg/db"
-	"github.com/pot-code/gobit/pkg/util"
+	"github.com/pot-code/gobit/pkg/logging"
 	"go.uber.org/zap"
 )
 
@@ -30,15 +30,15 @@ func ErrorHandling(logger *zap.Logger, options ...ErrorHandlingOption) echo.Midd
 		traceID := c.Response().Header().Get(echo.HeaderXRequestID)
 
 		cause := errors.Cause(e)
-		msg := gobit.ErrInternalError.Error()
+		msg := api.ErrInternalError.Error()
 		if err, ok := cause.(*db.SqlDBError); ok {
-			logger.Error(e.Error(), zap.String("trace.id", traceID), zap.Object("db", err), zap.Object("error", util.NewZapErrorWrapper(e, depth)))
-			msg = gobit.ErrDBError.Error()
+			logger.Error(e.Error(), zap.String("trace.id", traceID), zap.Object("db", err), zap.Object("error", logging.NewZapErrorWrapper(e, depth)))
+			msg = api.ErrDBError.Error()
 		} else {
-			logger.Error(e.Error(), zap.String("trace.id", traceID), zap.Object("error", util.NewZapErrorWrapper(e, depth)))
+			logger.Error(e.Error(), zap.String("trace.id", traceID), zap.Object("error", logging.NewZapErrorWrapper(e, depth)))
 		}
 		c.JSON(http.StatusInternalServerError,
-			util.NewRESTStandardError(msg).SetTraceID(traceID),
+			api.NewRESTStandardError(msg).SetTraceID(traceID),
 		)
 	}
 

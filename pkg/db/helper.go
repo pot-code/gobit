@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	gobit "github.com/pot-code/gobit/pkg"
-	"github.com/pot-code/gobit/pkg/util"
+	"github.com/pot-code/gobit/pkg/logging"
 )
 
 func GetLogQueryArgs(args []interface{}) []interface{} {
@@ -14,9 +14,9 @@ func GetLogQueryArgs(args []interface{}) []interface{} {
 	for _, a := range args {
 		switch v := a.(type) {
 		case []byte:
-			a = util.SanitizeBytes(v)
+			a = logging.SanitizeBytes(v)
 		case string:
-			a = util.SanitizeString(v)
+			a = logging.SanitizeString(v)
 		}
 		logArgs = append(logArgs, a)
 	}

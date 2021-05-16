@@ -9,35 +9,8 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	gobit "github.com/pot-code/gobit/pkg"
 	"go.uber.org/zap"
 )
-
-type postgres struct {
-	db     *pgxpool.Pool
-	logger *zap.Logger
-}
-
-type postgresTx struct {
-	tx     pgx.Tx
-	logger *zap.Logger
-}
-
-// assertion
-var _ TransactionalDB = &postgres{}
-var _ TransactionalDB = &postgresTx{}
-
-// NewPostgreSQLConn Returns a postgreSQL connection pool
-func NewPostgreSQLConn(cfg *DBConfig, logger *zap.Logger) (TransactionalDB, error) {
-	dsn, _ := GetDSN(cfg)
-	poolConfig, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		return nil, err
-	}
-	poolConfig.MaxConns = cfg.MaxConn
-	conn, err := pgxpool.ConnectConfig(context.Background(), poolConfig)
-	return &postgres{conn, logger}, err
-}
 
 type PgExecResult struct {
 	ct pgconn.CommandTag
@@ -71,7 +44,27 @@ func (pr PgQueryResult) Close() error {
 	return nil
 }
 
-func (pg *postgres) BeginTx(ctx context.Context, opts *TxOptions) (TransactionalDB, error) {
+type pgsql struct {
+	db     *pgxpool.Pool
+	logger *zap.Logger
+}
+
+// assertion
+var _ SqlDB = &pgsql{}
+
+// NewPostgreSQLConn Returns a postgreSQL connection pool
+func NewPostgreSQLConn(cfg *DBConfig, logger *zap.Logger) (SqlDB, error) {
+	dsn, _ := GetDSN(cfg)
+	poolConfig, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+	poolConfig.MaxConns = cfg.MaxConn
+	conn, err := pgxpool.ConnectConfig(context.Background(), poolConfig)
+	return &pgsql{conn, logger}, err
+}
+
+func (pg *pgsql) BeginTx(ctx context.Context, opts *TxOptions) (SqlTx, error) {
 	logger := pg.logger
 	startTime := time.Now()
 
@@ -88,25 +81,17 @@ func (pg *postgres) BeginTx(ctx context.Context, opts *TxOptions) (Transactional
 	return &postgresTx{tx, logger}, err
 }
 
-func (pg *postgres) Commit(ctx context.Context) error {
-	return nil
-}
-
-func (pg *postgres) Rollback(ctx context.Context) error {
-	return nil
-}
-
-func (pg *postgres) Ping(ctx context.Context) error {
+func (pg *pgsql) Ping(ctx context.Context) error {
 	return pg.db.Ping(ctx)
 }
 
 // Close close the whole pool, you better know what you are doing
-func (pg *postgres) Close(ctx context.Context) error {
+func (pg *pgsql) Close(ctx context.Context) error {
 	pg.db.Close()
 	return nil
 }
 
-func (pg *postgres) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+func (pg *pgsql) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	logger := pg.logger
 	startTime := time.Now()
 
@@ -122,7 +107,7 @@ func (pg *postgres) ExecContext(ctx context.Context, query string, args ...inter
 	return &PgExecResult{res}, err
 }
 
-func (pg *postgres) QueryContext(ctx context.Context, query string, args ...interface{}) (SqlRows, error) {
+func (pg *pgsql) QueryContext(ctx context.Context, query string, args ...interface{}) (SqlRows, error) {
 	logger := pg.logger
 	startTime := time.Now()
 
@@ -139,9 +124,12 @@ func (pg *postgres) QueryContext(ctx context.Context, query string, args ...inte
 	return &PgQueryResult{rows}, err
 }
 
-func (pgt *postgresTx) BeginTx(ctx context.Context, opts *TxOptions) (TransactionalDB, error) {
-	return nil, gobit.ErrReopenTransaction
+type postgresTx struct {
+	tx     pgx.Tx
+	logger *zap.Logger
 }
+
+var _ SqlTx = &postgresTx{}
 
 func (pgt *postgresTx) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	logger := pgt.logger
@@ -203,10 +191,6 @@ func (pgt *postgresTx) Rollback(ctx context.Context) error {
 
 func (pgt *postgresTx) Ping(ctx context.Context) error {
 	return pgt.tx.Conn().Ping(ctx)
-}
-
-func (pgt *postgresTx) Close(ctx context.Context) error {
-	return nil
 }
 
 func pgTxOptionAdapter(opts *TxOptions) pgx.TxOptions {
