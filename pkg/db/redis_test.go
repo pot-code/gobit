@@ -5,19 +5,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pot-code/gobit/pkg/db"
 	"github.com/stretchr/testify/assert"
 )
 
-var ctx = context.Background()
-
 func TestConnection(t *testing.T) {
-	client := db.NewRedisClient("localhost", 6379, "")
+	var ctx = context.Background()
+	client := NewRedisClient("localhost", 6379, "")
 	assert.Equal(t, client.Ping(ctx), nil)
 }
 
 func TestSetNumber(t *testing.T) {
-	client := db.NewRedisClient("localhost", 6379, "")
+	var ctx = context.Background()
+	client := NewRedisClient("localhost", 6379, "")
 	err := client.Set(ctx, "num", 1)
 	assert.Nil(t, err)
 	num, err := client.Get(ctx, "num")
@@ -29,7 +28,8 @@ func TestSetNumber(t *testing.T) {
 }
 
 func TestSetExp(t *testing.T) {
-	client := db.NewRedisClient("localhost", 6379, "")
+	var ctx = context.Background()
+	client := NewRedisClient("localhost", 6379, "")
 	err := client.SetExp(ctx, "num", 1, 100*time.Millisecond)
 	assert.Nil(t, err)
 

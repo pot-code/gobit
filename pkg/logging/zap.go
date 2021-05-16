@@ -8,9 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	gobit "github.com/pot-code/gobit/pkg"
-	"github.com/pot-code/gobit/pkg/util"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -105,43 +103,4 @@ func InjectContext(ctx context.Context, logger *zap.Logger) context.Context {
 // ExtractFromContext try to extract logger from context
 func ExtractFromContext(ctx context.Context) *zap.Logger {
 	return ctx.Value(DefaultLoggingContextKey).(*zap.Logger)
-}
-
-type ZapErrorWrapper struct {
-	depth int
-	err   error
-}
-
-// NewZapErrorWrapper create wrapper object that implements the `MarshalLogObject` protocol
-//
-// depth: set stack trace depth if the error type supports it
-//
-// err: the error to be wrapped
-func NewZapErrorWrapper(err error, depth int) *ZapErrorWrapper {
-	return &ZapErrorWrapper{depth, err}
-}
-
-func (te ZapErrorWrapper) Unwrap() error {
-	return te.err
-}
-
-func (te ZapErrorWrapper) Error() string {
-	if te.err != nil {
-		return te.err.Error()
-	}
-	return "traceable error"
-}
-
-func (te ZapErrorWrapper) MarshalLogObject(enc zapcore.ObjectEncoder) error {
-	err := te.err
-	if ste, ok := err.(util.StackTracer); ok {
-		trace := util.GetVerboseStackTrace(te.depth, ste)
-		enc.AddString("stack_trace", trace)
-
-		cause := errors.Cause(err)
-		enc.AddString("message", cause.Error())
-	} else {
-		enc.AddString("message", err.Error())
-	}
-	return nil
 }
