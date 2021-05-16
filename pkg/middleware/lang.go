@@ -7,12 +7,14 @@ import (
 	"golang.org/x/text/language"
 )
 
+var DefaultLangContextKey = gobit.AppContextKey("lang")
+
 type ParseAcceptLanguageOption struct {
 	ContextKey gobit.AppContextKey
 }
 
 func ParseAcceptLanguage(lang []language.Tag, options ...ParseAcceptLanguageOption) echo.MiddlewareFunc {
-	key := gobit.DefaultLangContextKey
+	key := DefaultLangContextKey
 	matcher := language.NewMatcher(lang)
 	if len(options) > 0 {
 		option := options[0]

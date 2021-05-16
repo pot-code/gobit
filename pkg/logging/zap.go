@@ -15,6 +15,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+var DefaultLoggingContextKey = gobit.AppContextKey("logger")
+
 // LoggerConfig options used in creating zap logger
 type LoggerConfig struct {
 	FilePath string // log file path
@@ -97,12 +99,12 @@ func getLevelEnabler(cfg *LoggerConfig) zapcore.LevelEnabler {
 
 // InjectContext set logger into target context
 func InjectContext(ctx context.Context, logger *zap.Logger) context.Context {
-	return context.WithValue(ctx, gobit.DefaultLoggingContextKey, logger)
+	return context.WithValue(ctx, DefaultLoggingContextKey, logger)
 }
 
 // ExtractFromContext try to extract logger from context
 func ExtractFromContext(ctx context.Context) *zap.Logger {
-	return ctx.Value(gobit.DefaultLoggingContextKey).(*zap.Logger)
+	return ctx.Value(DefaultLoggingContextKey).(*zap.Logger)
 }
 
 type ZapErrorWrapper struct {

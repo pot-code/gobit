@@ -11,6 +11,10 @@ import (
 	"github.com/pot-code/gobit/pkg/api"
 )
 
+var DefaultUserContextKey = gobit.AppContextKey("user")
+
+var DefaultRefreshTokenEchoKey = "refresh"
+
 // RefreshTokenOption ...
 type RefreshTokenOption struct {
 	Skipper        func(uri string) bool
@@ -23,11 +27,11 @@ type RefreshTokenOption struct {
 // VerifyRefreshToken validate refresh JWT
 func VerifyRefreshToken(options RefreshTokenOption) echo.MiddlewareFunc {
 	skipper := func(string) bool { return false }
-	contextKey := gobit.DefaultRefreshTokenEchoKey
+	echoKey := DefaultRefreshTokenEchoKey
 	tokenName := "refresh_token"
 
 	if options.EchoContextKey != "" {
-		contextKey = options.EchoContextKey
+		echoKey = options.EchoContextKey
 	}
 	if options.Skipper != nil {
 		skipper = options.Skipper
@@ -61,7 +65,7 @@ func VerifyRefreshToken(options RefreshTokenOption) echo.MiddlewareFunc {
 				return secret, nil
 			})
 			if err == nil {
-				c.Set(contextKey, token.Claims)
+				c.Set(echoKey, token.Claims)
 				return next(c)
 			}
 			return c.NoContent(http.StatusUnauthorized)
@@ -80,7 +84,7 @@ type ValidateTokenOption struct {
 // VerifyRefreshToken validate normal JWT
 func VerifyAccessToken(options ValidateTokenOption) echo.MiddlewareFunc {
 	skipper := func(string) bool { return false }
-	contextKey := gobit.DefaultUserContextKey
+	contextKey := DefaultUserContextKey
 	if options.ContextKey != "" {
 		contextKey = options.ContextKey
 	}

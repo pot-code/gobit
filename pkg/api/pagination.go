@@ -1,4 +1,4 @@
-package util
+package api
 
 type CursorPaginationReq struct {
 	Limit      int    `json:"limit" query:"limit" validate:"min=0,max=200"`
