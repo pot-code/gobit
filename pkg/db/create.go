@@ -48,7 +48,7 @@ func GetSqlxDB(cfg *DBConfig, logger *zap.Logger) (SqlxInterface, error) {
 	if cfg.Driver == gobit.DriverPostgresSQL {
 		xconfig.Driver = "pgx"
 	}
-	dsn, err := GetDSN(cfg)
+	dsn, err := getDSN(cfg)
 	if err != nil {
 		return nil, err
 	}

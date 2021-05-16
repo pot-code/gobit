@@ -1,14 +1,16 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v4"
 	gobit "github.com/pot-code/gobit/pkg"
 	"github.com/pot-code/gobit/pkg/logging"
 )
 
-func GetLogQueryArgs(args []interface{}) []interface{} {
+func getLogQueryArgs(args []interface{}) []interface{} {
 	logArgs := make([]interface{}, 0, len(args))
 
 	for _, a := range args {
@@ -24,7 +26,7 @@ func GetLogQueryArgs(args []interface{}) []interface{} {
 	return logArgs
 }
 
-func GetDSN(cfg *DBConfig) (dsn string, err error) {
+func getDSN(cfg *DBConfig) (dsn string, err error) {
 	query := ""
 	if len(cfg.Query) > 0 {
 		query = "?" + strings.Join(cfg.Query, "&")
@@ -38,4 +40,42 @@ func GetDSN(cfg *DBConfig) (dsn string, err error) {
 		err = fmt.Errorf("unsupported driver: %s", cfg.Driver)
 	}
 	return
+}
+
+func sqlTxOptionAdapter(opts *TxOptions) *sql.TxOptions {
+	if opts == nil {
+		return nil
+	}
+	iso := opts.Isolation
+	readOnly := opts.AccessMode == AccessReadOnly
+	return &sql.TxOptions{
+		Isolation: iso,
+		ReadOnly:  readOnly,
+	}
+}
+
+func pgTxOptionAdapter(opts *TxOptions) pgx.TxOptions {
+	if opts == nil {
+		return pgx.TxOptions{}
+	}
+	iso := pgx.TxIsoLevel(strings.ToLower(opts.Isolation.String()))
+
+	var access pgx.TxAccessMode
+	if opts.AccessMode == AccessReadOnly {
+		access = pgx.ReadOnly
+	} else {
+		access = pgx.ReadWrite
+	}
+
+	var deferrable pgx.TxDeferrableMode
+	if opts.DeferrableMode == Deferrable {
+		deferrable = pgx.Deferrable
+	} else {
+		deferrable = pgx.NotDeferrable
+	}
+	return pgx.TxOptions{
+		IsoLevel:       iso,
+		AccessMode:     access,
+		DeferrableMode: deferrable,
+	}
 }
