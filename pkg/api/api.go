@@ -82,7 +82,7 @@ func PrintRoutes(app *echo.Echo, logger *zap.Logger) {
 		return routes[i][1] < routes[j][1]
 	})
 	for _, route := range routes {
-		logger.Info("Registered route", zap.String("method", route[0]), zap.String("path", route[1]))
+		logger.Debug("Registered route", zap.String("method", route[0]), zap.String("path", route[1]))
 	}
 }
 
@@ -132,10 +132,10 @@ func StatusResponse(c echo.Context, code int) error {
 
 func BindErrorResponse(c echo.Context, err error) error {
 	if he, ok := err.(*echo.HTTPError); ok {
-		return c.JSON(http.StatusBadRequest, NewRESTBindingError(ErrFailedBinding.Error(), he.Message, nil))
+		return c.JSON(http.StatusBadRequest, NewRESTBindingError(ErrFailedBinding.Error(), he.Message))
 	}
 	if be, ok := err.(*echo.BindingError); ok {
-		return c.JSON(http.StatusBadRequest, NewRESTBindingError(ErrFailedBinding.Error(), be.Message, be))
+		return c.JSON(http.StatusBadRequest, NewRESTBindingError(ErrFailedBinding.Error(), be.Message))
 	}
 	return c.JSON(http.StatusBadRequest, NewRESTStandardError(ErrFailedBinding.Error()))
 }

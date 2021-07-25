@@ -53,7 +53,7 @@ func (gv GoValidatorV10) Struct(s interface{}, lang string) *ValidationError {
 	trans, _ := gv.uni.GetTranslator(lang)
 	if err := validate.Struct(s); err != nil {
 		for _, item := range err.(validator.ValidationErrors) {
-			result.AddFieldError(NewFieldError(item.Field(), item.Translate(trans)))
+			result.AddFieldError(item.Translate(trans))
 		}
 		return result
 	}
@@ -79,7 +79,7 @@ func (gv GoValidatorV10) validateWithTag(v interface{}, name, tag, lang string) 
 	trans, _ := gv.uni.GetTranslator(lang)
 	if err := validate.Var(v, tag); err != nil {
 		for _, item := range err.(validator.ValidationErrors) {
-			result.AddFieldError(NewFieldError(name, item.Translate(trans)))
+			result.AddFieldError(name + item.Translate(trans))
 		}
 		return result
 	}

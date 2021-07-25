@@ -22,21 +22,18 @@ type ErrorHandlingOption struct {
 // ErrorHandling auto recovery and handle the errors returned from handlers
 //
 // the default depth is infinite (-1)
-func ErrorHandling(logger *zap.Logger, options ...ErrorHandlingOption) echo.MiddlewareFunc {
+func ErrorHandling(log *zap.Logger, options ...ErrorHandlingOption) echo.MiddlewareFunc {
 	depth := -1
-
-	// default error handler
 	handler := func(c echo.Context, e error) {
 		traceID := c.Response().Header().Get(echo.HeaderXRequestID)
-
 		cause := errors.Cause(e)
 		msg := api.ErrInternalError.Error()
 		if err, ok := cause.(*db.SqlDBError); ok {
-			logger.Error(e.Error(), zap.String("trace.id", traceID), zap.Object("db", err), zap.Object("error", logging.NewZapErrorWrapper(e, depth)))
-			msg = api.ErrDBError.Error()
+			log.Error(e.Error(), zap.String("trace.id", traceID), zap.Object("detail", err), zap.Object("error", logging.NewZapErrorWrapper(e, depth)))
 		} else {
-			logger.Error(e.Error(), zap.String("trace.id", traceID), zap.Object("error", logging.NewZapErrorWrapper(e, depth)))
+			log.Error(e.Error(), zap.String("trace.id", traceID), zap.Object("detail", logging.NewZapErrorWrapper(e, depth)))
 		}
+
 		c.JSON(http.StatusInternalServerError,
 			api.NewRESTStandardError(msg).SetTraceID(traceID),
 		)

@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 
-	"github.com/labstack/echo/v4"
 	"github.com/pot-code/gobit/pkg/validate"
 )
 
@@ -12,7 +11,6 @@ var (
 	ErrFailedBinding  = errors.New("errors.bind")
 	ErrFailedValidate = errors.New("errors.validate")
 	ErrInternalError  = errors.New("errors.internal")
-	ErrDBError        = errors.New("errors.db")
 )
 
 // RESTStandardError response error
@@ -63,17 +61,15 @@ func (rve RESTValidationError) SetTraceID(traceID string) RESTValidationError {
 // RESTValidationError standard validation error
 type RESTBindingError struct {
 	RESTStandardError
-	Reason interface{}        `json:"reason,omitempty"`
-	Errors *echo.BindingError `json:"errors,omitempty"`
+	Reason interface{} `json:"reason,omitempty"`
 }
 
-func NewRESTBindingError(msg string, reason interface{}, err *echo.BindingError) *RESTBindingError {
+func NewRESTBindingError(msg string, reason interface{}) *RESTBindingError {
 	return &RESTBindingError{
 		RESTStandardError: RESTStandardError{
 			Message: msg,
 		},
 		Reason: reason,
-		Errors: err,
 	}
 }
 
