@@ -3,7 +3,6 @@ package logging
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -42,26 +41,12 @@ func NewLogger(cfg *LoggerConfig) (*zap.Logger, error) {
 	), nil
 }
 
-func getZapLoggingLevel(level string) (zlevel zapcore.Level) {
-	switch strings.ToLower(level) {
-	case "debug":
-		zlevel = zap.DebugLevel
-	case "info":
-		zlevel = zap.InfoLevel
-	case "warn":
-		zlevel = zap.WarnLevel
-	case "error":
-		zlevel = zap.ErrorLevel
-	case "fatal":
-		zlevel = zap.FatalLevel
-	default:
-		log.Fatal(fmt.Errorf("unknown logging level: %s", level))
-	}
-	return
-}
-
 func createProductionLogger(cfg *LoggerConfig) (zapcore.Core, error) {
-	logEnabler := getLevelEnabler(cfg)
+	logEnabler, err := getLevelEnabler(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	ecsEncoderConfig := zap.NewProductionEncoderConfig()
 	ecsEncoderConfig.EncodeTime = zapcore.TimeEncoder(func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString(t.UTC().Format("2006-01-02T15:04:05.000Z"))
@@ -88,11 +73,32 @@ func getFileSyncer(cfg *LoggerConfig) (zapcore.WriteSyncer, error) {
 	return fd, err
 }
 
-func getLevelEnabler(cfg *LoggerConfig) zapcore.LevelEnabler {
-	level := getZapLoggingLevel(cfg.Level)
+func getZapLoggingLevel(level string) (zlevel zapcore.Level, err error) {
+	switch strings.ToLower(level) {
+	case "debug":
+		zlevel = zap.DebugLevel
+	case "info":
+		zlevel = zap.InfoLevel
+	case "warn":
+		zlevel = zap.WarnLevel
+	case "error":
+		zlevel = zap.ErrorLevel
+	case "fatal":
+		zlevel = zap.FatalLevel
+	default:
+		err = fmt.Errorf("unknown logging level: %s", level)
+	}
+	return
+}
+
+func getLevelEnabler(cfg *LoggerConfig) (zapcore.LevelEnabler, error) {
+	level, err := getZapLoggingLevel(cfg.Level)
+	if err != nil {
+		return nil, err
+	}
 	return zap.LevelEnablerFunc(func(lv zapcore.Level) bool {
 		return lv >= level
-	})
+	}), nil
 }
 
 // InjectContext set logger into target context
