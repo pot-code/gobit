@@ -21,8 +21,8 @@ type DBConfig struct {
 	Debug    bool
 }
 
-// GetSqlDBConnection create a DB connection from given config
-func GetSqlDBConnection(cfg *DBConfig, logger *zap.Logger) (conn SqlDB, err error) {
+// CreateSqlDBConnection create a DB connection from given config
+func CreateSqlDBConnection(cfg *DBConfig, logger *zap.Logger) (conn SqlDB, err error) {
 	driver := cfg.Driver
 	switch driver {
 	case gobit.DriverMysqlDB:
@@ -42,8 +42,8 @@ type SqlxDBConfig struct {
 	Debug   bool
 }
 
-// GetSqlxDB create a sqlx instance
-func GetSqlxDB(cfg *DBConfig, logger *zap.Logger) (SqlxInterface, error) {
+// CreateSqlxDB create a sqlx instance
+func CreateSqlxDB(cfg *DBConfig, logger *zap.Logger) (SqlxInterface, error) {
 	xconfig := &SqlxDBConfig{Driver: cfg.Driver, MaxConn: cfg.MaxConn, Debug: cfg.Debug}
 	if cfg.Driver == gobit.DriverPostgresSQL {
 		xconfig.Driver = "pgx"

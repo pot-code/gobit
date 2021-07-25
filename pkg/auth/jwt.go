@@ -2,7 +2,6 @@ package auth
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -133,16 +132,4 @@ func (jp *JwtProvider) GenerateRefreshTokenStr(data map[string]interface{}) (str
 		claims[k] = v
 	}
 	return jp.Sign(claims)
-}
-
-// GenerateTokenStr generate user token from user model
-func (jp *JwtProvider) GenerateRefreshTokenCookie(name, token string) *http.Cookie {
-	return &http.Cookie{
-		Name:     name,
-		Value:    token,
-		HttpOnly: true,
-		Path:     "/",
-		SameSite: http.SameSiteLaxMode,
-		Expires:  time.Now().Add(jp.RefreshExpiration),
-	}
 }

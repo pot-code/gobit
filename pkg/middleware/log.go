@@ -32,9 +32,9 @@ func Logging(logger *zap.Logger, options ...LoggingConfig) echo.MiddlewareFunc {
 			err := next(c)
 			code := c.Response().Status
 			rid := c.Response().Header().Get(echo.HeaderXRequestID)
-			logger.Info(
+			logger.Debug(
 				http.StatusText(code),
-				zap.String("trace", rid),
+				zap.String("trace.id", rid),
 				zap.String("url.original", c.Path()),
 				zap.String("http.request.referrer", c.Request().Referer()),
 				zap.String("http.request.method", c.Request().Method),
