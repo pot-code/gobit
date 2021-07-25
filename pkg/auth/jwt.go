@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -17,9 +17,17 @@ type JwtProvider struct {
 	method            jwt.SigningMethod
 }
 
+type RSAKeyType int
+
+const (
+	RSAPrivate RSAKeyType = iota
+	RSApublic
+)
+
 type RSAConfig struct {
-	KeyType, Password string
-	Secret            []byte
+	KeyType  RSAKeyType
+	Password string
+	Secret   []byte
 }
 
 // NewJwtProvider create a JWTUtil instance
@@ -29,31 +37,47 @@ func NewJwtProvider(
 	expiration,
 	refreshExpiration time.Duration,
 	configs ...RSAConfig,
-) *JwtProvider {
+) (*JwtProvider, error) {
 	var (
 		signKey     interface{} = secret
 		validateKey interface{} = secret
 	)
 	if method == jwt.SigningMethodRS256 {
-		if len(configs) < 1 {
-			log.Fatal("must provide a RSAConfig")
-		}
-		for _, config := range configs {
-			if config.KeyType == "public" {
-				pk, err := jwt.ParseRSAPublicKeyFromPEM(config.Secret)
-				if err != nil {
-					log.Fatal("failed to parse provided public key: ", err)
-				}
-				validateKey = pk
-			} else if config.KeyType == "private" {
-				pk, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword(config.Secret, config.Password)
-				if err != nil {
-					log.Fatal("failed to parse provided private key: ", err)
-				}
-				signKey = pk
-			} else {
-				log.Fatalf("unsupported key type: '%s'", config.KeyType)
+		return createRSAProvider(method, secret, expiration, refreshExpiration, configs...)
+	}
+	return &JwtProvider{
+		method:            method,
+		signKey:           signKey,
+		validateKey:       validateKey,
+		Expiration:        expiration,
+		RefreshExpiration: refreshExpiration,
+	}, nil
+}
+
+func createRSAProvider(
+	method jwt.SigningMethod,
+	secret []byte,
+	expiration,
+	refreshExpiration time.Duration,
+	configs ...RSAConfig,
+) (*JwtProvider, error) {
+	var (
+		signKey     interface{} = secret
+		validateKey interface{} = secret
+	)
+	for _, config := range configs {
+		if config.KeyType == RSApublic {
+			pk, err := jwt.ParseRSAPublicKeyFromPEM(config.Secret)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse provided public key: %w", err)
 			}
+			validateKey = pk
+		} else if config.KeyType == RSAPrivate {
+			pk, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword(config.Secret, config.Password)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse provided private key: %w", err)
+			}
+			signKey = pk
 		}
 	}
 	return &JwtProvider{
@@ -62,7 +86,7 @@ func NewJwtProvider(
 		validateKey:       validateKey,
 		Expiration:        expiration,
 		RefreshExpiration: refreshExpiration,
-	}
+	}, nil
 }
 
 // Sign sign token
