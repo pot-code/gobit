@@ -53,9 +53,8 @@ type pgsql struct {
 var _ SqlDB = &pgsql{}
 
 // NewPostgreSQLConn Returns a postgreSQL connection pool
-func NewPostgreSQLConn(cfg *DBConfig, logger *zap.Logger) (SqlDB, error) {
-	dsn, _ := getDSN(cfg)
-	poolConfig, err := pgxpool.ParseConfig(dsn)
+func NewPostgreSQLConn(cfg *SqlDBConfig, logger *zap.Logger) (SqlDB, error) {
+	poolConfig, err := pgxpool.ParseConfig(cfg.Dsn)
 	if err != nil {
 		return nil, err
 	}

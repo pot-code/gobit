@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+// SqlDBConfig
+type SqlDBConfig struct {
+	Driver  string // driver name
+	MaxConn int32  // maximum opening connections number
+	Dsn     string // dsn string
+	Debug   bool
+}
+
 type TxAccessMode int
 
 type TxDeferrableMode int

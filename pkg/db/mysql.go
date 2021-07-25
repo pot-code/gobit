@@ -23,9 +23,8 @@ type mysqlConn struct {
 var _ SqlDB = &mysqlConn{}
 
 // NewMySQLConn Returns a MySQL connection pool
-func NewMySQLConn(cfg *DBConfig, logger *zap.Logger) (SqlDB, error) {
-	dsn, _ := getDSN(cfg)
-	conn, err := sql.Open("mysql", dsn)
+func NewMySQLConn(cfg *SqlDBConfig, logger *zap.Logger) (SqlDB, error) {
+	conn, err := sql.Open("mysql", cfg.Dsn)
 	if err != nil {
 		return nil, err
 	}

@@ -20,12 +20,16 @@ type SqlxDB struct {
 
 var _ SqlxInterface = &SqlxDB{}
 
-func NewSqlxDB(config *SqlxDBConfig, logger *zap.Logger) (*SqlxDB, error) {
-	db, err := sqlx.Open(config.Driver, config.DSN)
-	db.SetMaxOpenConns(int(config.MaxConn))
-	db.SetMaxIdleConns(int(config.MaxConn) >> 2)
+func NewSqlxDB(cfg *SqlDBConfig, logger *zap.Logger) (*SqlxDB, error) {
+	db, err := sqlx.Open(cfg.Driver, cfg.Dsn)
+	if err != nil {
+		return nil, err
+	}
 
-	return &SqlxDB{db, config.Debug, logger.With(zap.String("event.module", "SqlxDB"))}, err
+	db.SetMaxOpenConns(int(cfg.MaxConn))
+	db.SetMaxIdleConns(int(cfg.MaxConn) >> 2)
+
+	return &SqlxDB{db, cfg.Debug, logger.With(zap.String("event.module", "SqlxDB"))}, err
 }
 
 func (sd SqlxDB) BeginTx(ctx context.Context, opts *TxOptions) (SqlxTxInterface, error) {
