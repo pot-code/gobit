@@ -61,24 +61,6 @@ type SqlTx interface {
 	Ping(ctx context.Context) error
 }
 
-type SqlxInterface interface {
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error
-	Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error
-	Insert(ctx context.Context, query string, args interface{}) (sql.Result, error)
-	Close(ctx context.Context) error
-	BeginTx(ctx context.Context, opts *TxOptions) (SqlxTxInterface, error)
-}
-
-type SqlxTxInterface interface {
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error
-	Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error
-	Insert(ctx context.Context, query string, args interface{}) (sql.Result, error)
-	Commit(ctx context.Context) error
-	Rollback(ctx context.Context) error
-}
-
 // CacheDB define a key-value storage interface
 type CacheDB interface {
 	SetExp(ctx context.Context, key string, value interface{}, expiration time.Duration) error

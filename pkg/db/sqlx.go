@@ -13,12 +13,10 @@ import (
 )
 
 type SqlxDB struct {
-	conn   *sqlx.DB
+	Client *sqlx.DB
 	debug  bool
 	logger *zap.Logger
 }
-
-var _ SqlxInterface = &SqlxDB{}
 
 func NewSqlxDB(cfg *SqlDBConfig, logger *zap.Logger) (*SqlxDB, error) {
 	db, err := sqlx.Open(cfg.Driver, cfg.Dsn)
@@ -32,23 +30,23 @@ func NewSqlxDB(cfg *SqlDBConfig, logger *zap.Logger) (*SqlxDB, error) {
 	return &SqlxDB{db, cfg.Debug, logger.With(zap.String("event.module", "SqlxDB"))}, err
 }
 
-func (sd SqlxDB) BeginTx(ctx context.Context, opts *TxOptions) (SqlxTxInterface, error) {
-	tx, err := sd.conn.BeginTxx(ctx, sqlTxOptionAdapter(opts))
+func (sd SqlxDB) BeginTx(ctx context.Context, opts *TxOptions) (SqlxTxDB, error) {
+	tx, err := sd.Client.BeginTxx(ctx, sqlTxOptionAdapter(opts))
 	if err != nil {
-		return nil, err
+		return SqlxTxDB{}, err
 	}
 	return SqlxTxDB{conn: tx, debug: sd.debug, logger: sd.logger}, nil
 }
 
 func (sd SqlxDB) Close(ctx context.Context) error {
-	return sd.conn.Close()
+	return sd.Client.Close()
 }
 
 func (sd SqlxDB) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
 	logger := sd.logger
 
 	startTime := time.Now()
-	err := sd.conn.SelectContext(ctx, dest, query, args...)
+	err := sd.Client.SelectContext(ctx, dest, query, args...)
 	endTime := time.Now()
 	if sd.debug {
 		logger.Debug(query,
@@ -70,7 +68,7 @@ func (sd SqlxDB) Get(ctx context.Context, dest interface{}, query string, args .
 	logger := sd.logger
 
 	startTime := time.Now()
-	err := sd.conn.GetContext(ctx, dest, query, args...)
+	err := sd.Client.GetContext(ctx, dest, query, args...)
 	endTime := time.Now()
 	if sd.debug {
 		logger.Debug(query,
@@ -92,7 +90,7 @@ func (sd SqlxDB) Insert(ctx context.Context, query string, args interface{}) (sq
 	logger := sd.logger
 
 	startTime := time.Now()
-	res, err := sd.conn.NamedExecContext(ctx, query, args)
+	res, err := sd.Client.NamedExecContext(ctx, query, args)
 	endTime := time.Now()
 	if sd.debug {
 		logger.Debug(query,
@@ -111,7 +109,7 @@ func (sd SqlxDB) ExecContext(ctx context.Context, query string, args ...interfac
 	logger := sd.logger
 
 	startTime := time.Now()
-	res, err := sd.conn.ExecContext(ctx, query, args...)
+	res, err := sd.Client.ExecContext(ctx, query, args...)
 	endTime := time.Now()
 	if sd.debug {
 		logger.Debug(query,
@@ -131,8 +129,6 @@ type SqlxTxDB struct {
 	debug  bool
 	logger *zap.Logger
 }
-
-var _ SqlxTxInterface = &SqlxTxDB{}
 
 func (sd SqlxTxDB) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
 	logger := sd.logger
