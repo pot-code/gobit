@@ -14,7 +14,7 @@ import (
 //
 // it uses zap for default logging
 type mysqlConn struct {
-	db     *sql.DB
+	DB     *sql.DB
 	debug  bool
 	logger *zap.Logger
 }
@@ -38,7 +38,7 @@ func (mw *mysqlConn) BeginTx(ctx context.Context, opts *TxOptions) (SqlTx, error
 	startTime := time.Now()
 
 	txConfig := sqlTxOptionAdapter(opts)
-	tx, err := mw.db.BeginTx(ctx, txConfig)
+	tx, err := mw.DB.BeginTx(ctx, txConfig)
 	endTime := time.Now()
 	if mw.debug {
 		logger.Debug("", zap.Duration("duration", endTime.Sub(startTime)),
@@ -52,18 +52,18 @@ func (mw *mysqlConn) BeginTx(ctx context.Context, opts *TxOptions) (SqlTx, error
 }
 
 func (mw *mysqlConn) Ping(ctx context.Context) error {
-	return mw.db.PingContext(ctx)
+	return mw.DB.PingContext(ctx)
 }
 
 func (mw *mysqlConn) Close(ctx context.Context) error {
-	return mw.db.Close()
+	return mw.DB.Close()
 }
 
 func (mw *mysqlConn) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	logger := mw.logger
 	startTime := time.Now()
 
-	res, err := mw.db.ExecContext(ctx, query, args...)
+	res, err := mw.DB.ExecContext(ctx, query, args...)
 	endTime := time.Now()
 	if mw.debug {
 		logger.Debug(query,
@@ -81,7 +81,7 @@ func (mw *mysqlConn) QueryContext(ctx context.Context, query string, args ...int
 	logger := mw.logger
 	startTime := time.Now()
 
-	rows, err := mw.db.QueryContext(ctx, query, args...)
+	rows, err := mw.DB.QueryContext(ctx, query, args...)
 	endTime := time.Now()
 	if mw.debug {
 		logger.Debug(query,

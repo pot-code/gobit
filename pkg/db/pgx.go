@@ -44,7 +44,7 @@ func (pr PgQueryResult) Close() error {
 }
 
 type pgsql struct {
-	db     *pgxpool.Pool
+	Pool   *pgxpool.Pool
 	debug  bool
 	logger *zap.Logger
 }
@@ -68,7 +68,7 @@ func (pg *pgsql) BeginTx(ctx context.Context, opts *TxOptions) (SqlTx, error) {
 	startTime := time.Now()
 
 	txConfig := pgTxOptionAdapter(opts)
-	tx, err := pg.db.BeginTx(ctx, txConfig)
+	tx, err := pg.Pool.BeginTx(ctx, txConfig)
 	endTime := time.Now()
 	if pg.debug {
 		logger.Debug("",
@@ -83,12 +83,12 @@ func (pg *pgsql) BeginTx(ctx context.Context, opts *TxOptions) (SqlTx, error) {
 }
 
 func (pg *pgsql) Ping(ctx context.Context) error {
-	return pg.db.Ping(ctx)
+	return pg.Pool.Ping(ctx)
 }
 
 // Close close the whole pool, you better know what you are doing
 func (pg *pgsql) Close(ctx context.Context) error {
-	pg.db.Close()
+	pg.Pool.Close()
 	return nil
 }
 
@@ -96,7 +96,7 @@ func (pg *pgsql) ExecContext(ctx context.Context, query string, args ...interfac
 	logger := pg.logger
 	startTime := time.Now()
 
-	res, err := pg.db.Exec(ctx, query, args...)
+	res, err := pg.Pool.Exec(ctx, query, args...)
 	endTime := time.Now()
 	if pg.debug {
 		logger.Debug(query,
@@ -114,7 +114,7 @@ func (pg *pgsql) QueryContext(ctx context.Context, query string, args ...interfa
 	logger := pg.logger
 	startTime := time.Now()
 
-	rows, err := pg.db.Query(ctx, query, args...)
+	rows, err := pg.Pool.Query(ctx, query, args...)
 	endTime := time.Now()
 	if pg.debug {
 		logger.Debug(query,
