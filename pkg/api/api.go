@@ -14,7 +14,7 @@ import (
 )
 
 type Endpoint struct {
-	ApiVersion  string                // '/' is optional
+	Prefix      string                // '/' is optional
 	Middlewares []echo.MiddlewareFunc // global middlewares
 	Groups      []*ApiGroup           // api groups
 }
@@ -37,10 +37,10 @@ func CreateEndpoint(app *echo.Echo, def *Endpoint) {
 
 	var root *echo.Group
 	version := "/"
-	if strings.HasPrefix(def.ApiVersion, "/") {
-		version = def.ApiVersion
+	if strings.HasPrefix(def.Prefix, "/") {
+		version = def.Prefix
 	} else {
-		version += def.ApiVersion
+		version += def.Prefix
 	}
 	root = app.Group(version, def.Middlewares...)
 
@@ -81,7 +81,7 @@ func PrintRoutes(app *echo.Echo, logger *zap.Logger) {
 		return routes[i][1] < routes[j][1]
 	})
 	for _, route := range routes {
-		logger.Debug("Registered route", zap.String("method", route[0]), zap.String("path", route[1]))
+		logger.Debug("registered route", zap.String("method", route[0]), zap.String("path", route[1]))
 	}
 }
 

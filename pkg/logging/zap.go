@@ -16,10 +16,9 @@ var DefaultLoggingContextKey = gobit.AppContextKey("logger")
 
 // LoggerConfig options used in creating zap logger
 type LoggerConfig struct {
-	FilePath string // log file path
-	Level    string // global logging level
-	Env      string // app environment
-	AppID    string
+	FilePath  string // log file path
+	Level     string // global logging level
+	AddCaller bool
 }
 
 // NewLogger returns a zap logger
@@ -33,12 +32,11 @@ func NewLogger(cfg *LoggerConfig) (*zap.Logger, error) {
 		return nil, fmt.Errorf("failed to create logger core::%w", err)
 	}
 
-	// logger := zap.New(core, zap.AddCaller())
 	logger := zap.New(core)
-	return logger.With(
-		zap.String("labels.application", cfg.AppID),
-		zap.String("labels.env", string(cfg.Env)),
-	), nil
+	if cfg.AddCaller {
+		logger.WithOptions(zap.AddCaller())
+	}
+	return logger, nil
 }
 
 func createProductionLogger(cfg *LoggerConfig) (zapcore.Core, error) {
@@ -54,7 +52,7 @@ func createProductionLogger(cfg *LoggerConfig) (zapcore.Core, error) {
 	ecsEncoderConfig.TimeKey = "@timestamp"
 	ecsEncoderConfig.MessageKey = "message"
 	ecsEncoderConfig.LevelKey = "log.level"
-	// ecsEncoderConfig.CallerKey = "log.position"
+	ecsEncoderConfig.CallerKey = "log.position"
 	ecsEncoderConfig.StacktraceKey = "error.stack_trace"
 	ecsEncoder := zapcore.NewJSONEncoder(ecsEncoderConfig)
 
@@ -73,7 +71,7 @@ func getFileSyncer(cfg *LoggerConfig) (zapcore.WriteSyncer, error) {
 	return fd, err
 }
 
-func getZapLoggingLevel(level string) (zlevel zapcore.Level, err error) {
+func getZapLoggingLevel(level string) (zlevel zapcore.Level) {
 	switch strings.ToLower(level) {
 	case "debug":
 		zlevel = zap.DebugLevel
@@ -86,16 +84,13 @@ func getZapLoggingLevel(level string) (zlevel zapcore.Level, err error) {
 	case "fatal":
 		zlevel = zap.FatalLevel
 	default:
-		err = fmt.Errorf("unknown logging level: %s", level)
+		zlevel = zap.DebugLevel
 	}
 	return
 }
 
 func getLevelEnabler(cfg *LoggerConfig) (zapcore.LevelEnabler, error) {
-	level, err := getZapLoggingLevel(cfg.Level)
-	if err != nil {
-		return nil, err
-	}
+	level := getZapLoggingLevel(cfg.Level)
 	return zap.LevelEnablerFunc(func(lv zapcore.Level) bool {
 		return lv >= level
 	}), nil
