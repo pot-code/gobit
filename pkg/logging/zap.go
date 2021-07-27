@@ -27,7 +27,7 @@ func NewLogger(cfg *LoggerConfig) (*zap.Logger, error) {
 		core zapcore.Core
 		err  error
 	)
-	core, err = createProductionLogger(cfg)
+	core, err = createProductionCore(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logger core::%w", err)
 	}
@@ -39,7 +39,7 @@ func NewLogger(cfg *LoggerConfig) (*zap.Logger, error) {
 	return logger, nil
 }
 
-func createProductionLogger(cfg *LoggerConfig) (zapcore.Core, error) {
+func createProductionCore(cfg *LoggerConfig) (zapcore.Core, error) {
 	logEnabler, err := getLevelEnabler(cfg)
 	if err != nil {
 		return nil, err

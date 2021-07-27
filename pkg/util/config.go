@@ -1,23 +1,19 @@
 package util
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-// ParseConfig init app config using viper
-func ParseConfig(envPrefix string, def interface{}) error {
+// LoadConfig init app config using viper
+func LoadConfig(envPrefix string, def interface{}) error {
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
@@ -86,18 +82,4 @@ func validateConfig(config interface{}) error {
 		return fmt.Errorf("failed to validate config: \n%s", strings.Join(msg, "\n"))
 	}
 	return err
-}
-
-func CleanUp(timeout time.Duration, cb func(ctx context.Context)) {
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
-	<-ch
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-	go func() {
-		<-ctx.Done()
-		cancel()
-		os.Exit(1)
-	}()
-	cb(ctx)
 }
