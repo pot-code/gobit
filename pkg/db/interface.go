@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+const (
+	DriverMysqlDB  = "mysql"
+	DriverPostgres = "postgres"
+	DriverPgx      = "pgx"
+)
+
 // SqlDBConfig
 type SqlDBConfig struct {
 	Driver  string // driver name
