@@ -2,10 +2,8 @@
 
 simple golang web starter kit
 
-- uber/zap for logging
+- uber/zap for logging, json structured
 - common interface for pg/mysql
-- sqlx + squirrel combo
+- sqlx
 - JWT auth
-- env/yaml/flags configs support
-- structured error response
-- some useful middlewares
+- support env/yaml/flag configuration
