@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-// NewRefreshTokenCookie create token cookie
-func NewRefreshTokenCookie(name, token string, exp time.Duration) *http.Cookie {
+// NewHttpCookie create new cookie
+func NewHttpCookie(name, value string, exp time.Duration) *http.Cookie {
 	return &http.Cookie{
 		Name:     name,
-		Value:    token,
+		Value:    value,
 		HttpOnly: true,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
