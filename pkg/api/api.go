@@ -45,7 +45,11 @@ func CreateEndpoint(app *echo.Echo, def *Endpoint) {
 	root = app.Group(version, def.Middlewares...)
 
 	for _, group := range def.Groups {
-		echoGroup := root.Group(group.Prefix, group.Middlewares...)
+		p := group.Prefix
+		if !strings.HasPrefix(p, "/") {
+			p = "/" + p
+		}
+		echoGroup := root.Group(p, group.Middlewares...)
 		for _, api := range group.Routes {
 			var method RESTMethod
 			switch api.Method {
@@ -81,7 +85,7 @@ func PrintRoutes(app *echo.Echo, logger *zap.Logger) {
 		return routes[i][1] < routes[j][1]
 	})
 	for _, route := range routes {
-		logger.Debug("registered route", zap.String("method", route[0]), zap.String("path", route[1]))
+		logger.Debug("register route", zap.String("method", route[0]), zap.String("path", route[1]))
 	}
 }
 
