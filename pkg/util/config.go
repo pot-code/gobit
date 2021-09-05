@@ -13,7 +13,7 @@ import (
 )
 
 // LoadConfig init app config using viper
-func LoadConfig(envPrefix string, def interface{}) error {
+func LoadConfig(envPrefix string, o interface{}) error {
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
@@ -36,10 +36,11 @@ func LoadConfig(envPrefix string, def interface{}) error {
 		}
 	}
 
-	if err := viper.Unmarshal(def); err != nil {
+	if err := viper.Unmarshal(o); err != nil {
 		return err
 	}
-	if err := validateConfig(def); err != nil {
+
+	if err := validateConfig(o); err != nil {
 		return err
 	}
 
@@ -48,6 +49,7 @@ func LoadConfig(envPrefix string, def interface{}) error {
 
 func validateConfig(config interface{}) error {
 	validate := validator.New()
+
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := fld.Tag.Get("json")
 		if name == "-" || name == "" {

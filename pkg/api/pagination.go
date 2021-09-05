@@ -1,8 +1,8 @@
 package api
 
 type CursorPaginationReq struct {
-	Limit      int    `json:"limit" query:"limit" validate:"min=0,max=200"`
-	NextCursor string `json:"next_cursor" query:"cursor" validate:"required"`
+	Limit  int    `json:"limit" query:"limit" validate:"min=0,max=200"`
+	Cursor string `json:"cursor" query:"cursor"`
 }
 
 type CursorPaginationResponse struct {
@@ -21,8 +21,8 @@ func NewCursorPaginationResponse(data interface{}, cursor string) *CursorPaginat
 }
 
 type OffsetPaginationReq struct {
-	Page  int `json:"page" query:"page" validate:"min=0"`
-	Limit int `json:"limit" query:"limit" validate:"min=0,max=200"`
+	Page  int `query:"page" validate:"min=0"`
+	Limit int `query:"limit" validate:"min=0,max=200"`
 }
 
 type OffsetPagination struct {

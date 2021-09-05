@@ -35,15 +35,14 @@ type Route struct {
 func CreateEndpoint(app *echo.Echo, def *Endpoint) {
 	type RESTMethod func(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 
-	var root *echo.Group
 	version := "/"
 	if strings.HasPrefix(def.Prefix, "/") {
 		version = def.Prefix
 	} else {
 		version += def.Prefix
 	}
-	root = app.Group(version, def.Middlewares...)
 
+	root := app.Group(version, def.Middlewares...)
 	for _, group := range def.Groups {
 		p := group.Prefix
 		if !strings.HasPrefix(p, "/") {
