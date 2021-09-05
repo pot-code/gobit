@@ -19,11 +19,11 @@ func NewExitManager() *ExitManager {
 	}
 }
 
-func (em ExitManager) Register(handler ExitHandler) {
+func (em *ExitManager) Register(handler ExitHandler) {
 	em.handlers = append(em.handlers, handler)
 }
 
-func (em ExitManager) Wait(timeout time.Duration) {
+func (em *ExitManager) WaitSignal(timeout time.Duration) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
 	<-ch
