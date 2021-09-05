@@ -27,7 +27,7 @@ func NewLogger(cfg *LoggerConfig) (*zap.Logger, error) {
 		core zapcore.Core
 		err  error
 	)
-	core, err = createProductionCore(cfg)
+	core, err = NewProductionCore(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logger core::%w", err)
 	}
@@ -39,8 +39,8 @@ func NewLogger(cfg *LoggerConfig) (*zap.Logger, error) {
 	return logger, nil
 }
 
-func createProductionCore(cfg *LoggerConfig) (zapcore.Core, error) {
-	logEnabler, err := getLevelEnabler(cfg)
+func NewProductionCore(cfg *LoggerConfig) (zapcore.Core, error) {
+	logEnabler, err := getLevelEnabler(cfg.Level)
 	if err != nil {
 		return nil, err
 	}
@@ -57,40 +57,40 @@ func createProductionCore(cfg *LoggerConfig) (zapcore.Core, error) {
 	ecsEncoder := zapcore.NewJSONEncoder(ecsEncoderConfig)
 
 	if cfg.FilePath != "" {
-		elkOutput, err := getFileSyncer(cfg)
+		elkOutput, err := getFileSyncer(cfg.FilePath)
 		return zapcore.NewCore(ecsEncoder, elkOutput, logEnabler), err
 	}
 	return zapcore.NewCore(ecsEncoder, os.Stderr, logEnabler), nil
 }
 
-func getFileSyncer(cfg *LoggerConfig) (zapcore.WriteSyncer, error) {
-	fd, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+func getFileSyncer(p string) (zapcore.WriteSyncer, error) {
+	fd, err := os.OpenFile(p, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return nil, err
 	}
 	return fd, err
 }
 
-func getZapLoggingLevel(level string) (zlevel zapcore.Level) {
-	switch strings.ToLower(level) {
+func getZapLoggingLevel(l string) (level zapcore.Level) {
+	switch strings.ToLower(l) {
 	case "debug":
-		zlevel = zap.DebugLevel
+		level = zap.DebugLevel
 	case "info":
-		zlevel = zap.InfoLevel
+		level = zap.InfoLevel
 	case "warn":
-		zlevel = zap.WarnLevel
+		level = zap.WarnLevel
 	case "error":
-		zlevel = zap.ErrorLevel
+		level = zap.ErrorLevel
 	case "fatal":
-		zlevel = zap.FatalLevel
+		level = zap.FatalLevel
 	default:
-		zlevel = zap.DebugLevel
+		level = zap.InfoLevel
 	}
 	return
 }
 
-func getLevelEnabler(cfg *LoggerConfig) (zapcore.LevelEnabler, error) {
-	level := getZapLoggingLevel(cfg.Level)
+func getLevelEnabler(l string) (zapcore.LevelEnabler, error) {
+	level := getZapLoggingLevel(l)
 	return zap.LevelEnablerFunc(func(lv zapcore.Level) bool {
 		return lv >= level
 	}), nil

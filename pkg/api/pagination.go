@@ -2,7 +2,7 @@ package api
 
 type CursorPaginationReq struct {
 	Limit  int    `json:"limit" query:"limit" validate:"min=0,max=200"`
-	Cursor string `json:"cursor" query:"cursor"`
+	Cursor string `json:"cursor" query:"cursor" validate:"required"`
 }
 
 type CursorPaginationResponse struct {

@@ -1,17 +1,16 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	gobit "github.com/pot-code/gobit/pkg"
 	"github.com/pot-code/gobit/pkg/api"
+	"github.com/pot-code/gobit/pkg/auth"
 )
 
-var DefaultUserContextKey = gobit.AppContextKey("user")
+var DefaultTokenContextKey = gobit.AppContextKey("user")
 
 var DefaultRefreshTokenEchoKey = "refresh"
 
@@ -19,13 +18,11 @@ var DefaultRefreshTokenEchoKey = "refresh"
 type RefreshTokenOption struct {
 	Skipper        func(uri string) bool
 	EchoContextKey string
-	Secret         []byte
 	TokenName      string
-	Algorithm      jwt.SigningMethod
 }
 
 // VerifyRefreshToken validate refresh JWT
-func VerifyRefreshToken(options RefreshTokenOption) echo.MiddlewareFunc {
+func VerifyRefreshToken(jp *auth.JwtProvider, options RefreshTokenOption) echo.MiddlewareFunc {
 	skipper := func(string) bool { return false }
 	echoKey := DefaultRefreshTokenEchoKey
 	tokenName := "refresh_token"
@@ -40,16 +37,6 @@ func VerifyRefreshToken(options RefreshTokenOption) echo.MiddlewareFunc {
 		tokenName = options.TokenName
 	}
 
-	var (
-		secret interface{} = options.Secret
-		err    error
-	)
-	if options.Algorithm == jwt.SigningMethodRS256 {
-		secret, err = jwt.ParseRSAPublicKeyFromPEM(options.Secret)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if skipper(c.Request().RequestURI) {
@@ -61,11 +48,9 @@ func VerifyRefreshToken(options RefreshTokenOption) echo.MiddlewareFunc {
 				return c.NoContent(http.StatusUnauthorized)
 			}
 
-			token, err := jwt.Parse(tokenStr.Value, func(token *jwt.Token) (interface{}, error) {
-				return secret, nil
-			})
+			token, err := jp.Validate(tokenStr.Value)
 			if err == nil {
-				c.Set(echoKey, token.Claims)
+				c.Set(echoKey, token)
 				return next(c)
 			}
 			return c.NoContent(http.StatusUnauthorized)
@@ -77,14 +62,13 @@ func VerifyRefreshToken(options RefreshTokenOption) echo.MiddlewareFunc {
 type ValidateTokenOption struct {
 	Skipper    func(uri string) bool
 	ContextKey gobit.AppContextKey
-	Secret     []byte
-	Algorithm  jwt.SigningMethod
 }
 
 // VerifyRefreshToken validate normal JWT
-func VerifyAccessToken(options ValidateTokenOption) echo.MiddlewareFunc {
+func VerifyAccessToken(jp *auth.JwtProvider, options ValidateTokenOption) echo.MiddlewareFunc {
 	skipper := func(string) bool { return false }
-	contextKey := DefaultUserContextKey
+	contextKey := DefaultTokenContextKey
+
 	if options.ContextKey != "" {
 		contextKey = options.ContextKey
 	}
@@ -92,16 +76,6 @@ func VerifyAccessToken(options ValidateTokenOption) echo.MiddlewareFunc {
 		skipper = options.Skipper
 	}
 
-	var (
-		secret interface{} = options.Secret
-		err    error
-	)
-	if options.Algorithm == jwt.SigningMethodRS256 {
-		secret, err = jwt.ParseRSAPublicKeyFromPEM(options.Secret)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if skipper(c.Request().RequestURI) {
@@ -114,11 +88,9 @@ func VerifyAccessToken(options ValidateTokenOption) echo.MiddlewareFunc {
 			}
 
 			tokenStr := strings.TrimPrefix(auth, "Bearer ")
-			token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-				return secret, nil
-			})
+			token, err := jp.Validate(tokenStr)
 			if err == nil {
-				api.WithContextValue(c, contextKey, token.Claims)
+				api.WithContextValue(c, contextKey, token)
 				return next(c)
 			}
 			return c.NoContent(http.StatusUnauthorized)
