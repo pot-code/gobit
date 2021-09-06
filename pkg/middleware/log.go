@@ -13,7 +13,7 @@ type LoggingConfig struct {
 	LogFn   func(echo.Context)
 }
 
-// Logging create a logging middleware with zap logger
+// Logging create a logging middleware
 func Logging(option LoggingConfig) echo.MiddlewareFunc {
 	cfg := &LoggingConfig{
 		Skipper: middleware.DefaultSkipper,

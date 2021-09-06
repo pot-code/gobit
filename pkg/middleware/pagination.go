@@ -14,17 +14,15 @@ type PaginationOption struct {
 	LangKey gobit.AppContextKey
 }
 
-func CursorPagination(v *validate.GoValidatorV10, options ...PaginationOption) echo.MiddlewareFunc {
+func CursorPagination(v *validate.GoValidatorV10, option PaginationOption) echo.MiddlewareFunc {
 	key := DefaultPaginationEchoKey
 	langKey := DefaultLangContextKey
-	if len(options) > 0 {
-		option := options[0]
-		if option.EchoKey != "" {
-			key = option.EchoKey
-		}
-		if option.LangKey != "" {
-			langKey = option.LangKey
-		}
+
+	if option.EchoKey != "" {
+		key = option.EchoKey
+	}
+	if option.LangKey != "" {
+		langKey = option.LangKey
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

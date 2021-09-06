@@ -13,14 +13,11 @@ type ParseAcceptLanguageOption struct {
 	ContextKey gobit.AppContextKey
 }
 
-func ParseAcceptLanguage(lang []language.Tag, options ...ParseAcceptLanguageOption) echo.MiddlewareFunc {
+func ParseAcceptLanguage(lang []language.Tag, option ParseAcceptLanguageOption) echo.MiddlewareFunc {
 	key := DefaultLangContextKey
 	matcher := language.NewMatcher(lang)
-	if len(options) > 0 {
-		option := options[0]
-		if option.ContextKey != "" {
-			key = option.ContextKey
-		}
+	if option.ContextKey != "" {
+		key = option.ContextKey
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

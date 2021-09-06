@@ -15,17 +15,11 @@ type AbortRequestOption struct {
 }
 
 // AbortRequest handle request abortion
-func AbortRequest(options ...AbortRequestOption) echo.MiddlewareFunc {
-	custom := &AbortRequestOption{
-		Timeout: 30 * time.Second,
+func AbortRequest(option AbortRequestOption) echo.MiddlewareFunc {
+	timeout := 30 * time.Second
+	if option.Timeout > 0 {
+		timeout = option.Timeout
 	}
-	if len(options) > 0 {
-		option := options[0]
-		if option.Timeout != 0 {
-			custom.Timeout = option.Timeout
-		}
-	}
-	timeout := custom.Timeout
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if timeout > 0 {
