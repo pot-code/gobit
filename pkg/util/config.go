@@ -1,7 +1,7 @@
 package util
 
 import (
-	"errors"
+	"log"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -43,7 +43,7 @@ func WithEnvPrefix(prefix string) ConfigOption {
 }
 
 var (
-	ErrNoConfigFileFound = errors.New("no config file found")
+// ErrNoConfigFileFound = errors.New("no config file found")
 )
 
 type ConfigManager struct {
@@ -86,7 +86,7 @@ func (cm *ConfigManager) LoadConfig(cfg interface{}) error {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return ErrNoConfigFileFound
+			log.Println("[ConfigManager.LoadConfig]: no config found, skipped")
 		} else {
 			return err
 		}
