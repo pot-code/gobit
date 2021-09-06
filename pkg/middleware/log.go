@@ -1,28 +1,38 @@
 package middleware
 
 import (
-	"net/http"
+	"log"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"go.uber.org/zap"
 )
 
 type LoggingConfig struct {
 	// Skipper defines a function to skip middleware.
 	Skipper middleware.Skipper
+	LogFn   func(echo.Context)
 }
 
 // Logging create a logging middleware with zap logger
-func Logging(logger *zap.Logger, options ...LoggingConfig) echo.MiddlewareFunc {
+func Logging(option LoggingConfig) echo.MiddlewareFunc {
 	cfg := &LoggingConfig{
 		Skipper: middleware.DefaultSkipper,
 	}
-	if len(options) > 0 {
-		option := options[0]
-		if option.Skipper != nil {
-			cfg.Skipper = option.Skipper
-		}
+	logFn := func(c echo.Context) {
+		code := c.Response().Status
+		rid := c.Response().Header().Get(echo.HeaderXRequestID)
+		log.Printf("status=%d trace_id=%s url=%s referrer=%s method=%s route_param_names=%v, route_param_values=%v",
+			code,
+			rid,
+			c.Path(),
+			c.Request().Referer(),
+			c.Request().Method,
+			c.ParamNames(),
+			c.ParamValues(),
+		)
+	}
+	if option.LogFn != nil {
+		logFn = option.LogFn
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -30,19 +40,7 @@ func Logging(logger *zap.Logger, options ...LoggingConfig) echo.MiddlewareFunc {
 				return next(c)
 			}
 			err := next(c)
-			code := c.Response().Status
-			rid := c.Response().Header().Get(echo.HeaderXRequestID)
-			logger.Debug(
-				http.StatusText(code),
-				zap.String("trace.id", rid),
-				zap.String("url.original", c.Path()),
-				zap.String("http.request.referrer", c.Request().Referer()),
-				zap.String("http.request.method", c.Request().Method),
-				zap.Int("http.request.status_code", code),
-				zap.Strings("route.params.name", c.ParamNames()),
-				zap.Strings("route.params.value", c.ParamValues()),
-				zap.Int64("http.response.body.bytes", c.Response().Size),
-			)
+			logFn(c)
 			return err
 		}
 	}
