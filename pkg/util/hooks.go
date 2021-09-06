@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func (em *ExitManager) Register(handler ExitHandler) {
 
 func (em *ExitManager) WaitSignal(timeout time.Duration) {
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	<-ch
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
