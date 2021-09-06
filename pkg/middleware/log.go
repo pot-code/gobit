@@ -21,7 +21,7 @@ func Logging(option LoggingConfig) echo.MiddlewareFunc {
 	logFn := func(c echo.Context) {
 		code := c.Response().Status
 		rid := c.Response().Header().Get(echo.HeaderXRequestID)
-		log.Printf("status=%d trace_id=%s url=%s referrer=%s method=%s route_param_names=%v, route_param_values=%v",
+		log.Printf("status=%d trace.id=%s url=%s referrer=%s method=%s route.param.names=%v, route.param.values=%v",
 			code,
 			rid,
 			c.Path(),
