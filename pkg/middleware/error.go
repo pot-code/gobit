@@ -16,8 +16,6 @@ type ErrorHandlingOption struct {
 }
 
 // ErrorHandling auto recovery and handle the errors returned from handlers
-//
-// the default depth is infinite (-1)
 func ErrorHandling(option ErrorHandlingOption) echo.MiddlewareFunc {
 	handler := func(c echo.Context, e error) {
 		traceID := c.Response().Header().Get(echo.HeaderXRequestID)
