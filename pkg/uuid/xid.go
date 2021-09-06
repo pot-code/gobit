@@ -6,7 +6,7 @@ type XIDGenerator struct {
 	generator xid.ID
 }
 
-var _ UUIDer = &XIDGenerator{}
+var _ UUID = &XIDGenerator{}
 
 func NewXIDGenerator() *XIDGenerator {
 	return &XIDGenerator{xid.New()}

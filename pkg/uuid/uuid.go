@@ -7,7 +7,7 @@ import (
 type GoUUIDGenerator struct {
 }
 
-var _ UUIDer = &GoUUIDGenerator{}
+var _ UUID = &GoUUIDGenerator{}
 
 func NewGoUUIDGenerator() *GoUUIDGenerator {
 	return &GoUUIDGenerator{}

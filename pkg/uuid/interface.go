@@ -6,8 +6,8 @@ var (
 	ErrNotImplemented = errors.New("not implemented")
 )
 
-// UUIDer UUID generator interface
-type UUIDer interface {
+// UUID UUID generator interface
+type UUID interface {
 	V1() (string, error)
 	V2(domain byte) (string, error)
 	V3(namespace, name string) (string, error)

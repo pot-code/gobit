@@ -7,7 +7,7 @@ type NanoIDGenerator struct {
 	Length int
 }
 
-var _ UUIDer = &NanoIDGenerator{}
+var _ UUID = &NanoIDGenerator{}
 
 func NewNanoIDGenerator(length int) *NanoIDGenerator {
 	if length < 1 {
