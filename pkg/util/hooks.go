@@ -24,11 +24,7 @@ func (em *ExitManager) Register(handler ExitHandler) {
 	em.handlers = append(em.handlers, handler)
 }
 
-func (em *ExitManager) WaitSignal(timeout time.Duration) {
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	<-ch
-
+func (em *ExitManager) Exit(timeout time.Duration) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	go func() {
@@ -40,4 +36,12 @@ func (em *ExitManager) WaitSignal(timeout time.Duration) {
 	for _, h := range em.handlers {
 		h(ctx)
 	}
+}
+
+func (em *ExitManager) WaitSignal(timeout time.Duration) {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	<-ch
+
+	em.Exit(timeout)
 }

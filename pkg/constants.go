@@ -4,11 +4,12 @@ type AppContextKey string
 
 const (
 	EnvProduction = "production"
-	EnvDevelop    = "develop"
+	EnvDevelop    = "development"
 )
 
 const (
 	DriverMysqlDB  = "mysql"
 	DriverPostgres = "postgres"
+	DriverSqlite   = "sqlite"
 	DriverPgx      = "pgx"
 )
