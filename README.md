@@ -1,9 +1,13 @@
 # About
 
-simple golang web starter kit
+golang web toolkit
 
-- uber/zap for logging, json structured
-- common interface for pg/mysql
-- sqlx
+## Features
+
 - JWT auth
-- support env/yaml/flag configuration
+- viper config manager
+- response helper for [echo](https://echo.labstack.com/)
+- [zap](https://github.com/uber-go/zap) configuration helper
+- uuid generator
+- echo middlewares
+- validate
