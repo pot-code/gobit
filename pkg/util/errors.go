@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/pkg/errors"
 )
@@ -16,4 +17,10 @@ func GetVerboseStackTrace(depth int, st StackTracer) string {
 		frames = frames[:depth]
 	}
 	return fmt.Sprintf("%+v", frames)
+}
+
+func HandleFatalError(message string, err error) {
+	if err != nil {
+		log.Fatalf("%s: %v", message, err)
+	}
 }
