@@ -29,8 +29,8 @@ func (re RESTStandardError) Error() string {
 	return re.Message
 }
 
-func (re RESTStandardError) SetTraceID(traceID string) RESTStandardError {
-	re.TraceID = traceID
+func (re RESTStandardError) SetTraceID(id string) RESTStandardError {
+	re.TraceID = id
 	return re
 }
 
@@ -40,12 +40,12 @@ type RESTValidationError struct {
 	Errors *validate.ValidationError `json:"errors"`
 }
 
-func NewRESTValidationError(msg string, internal *validate.ValidationError) *RESTValidationError {
+func NewRESTValidationError(msg string, ve *validate.ValidationError) *RESTValidationError {
 	return &RESTValidationError{
 		RESTStandardError: RESTStandardError{
 			Message: msg,
 		},
-		Errors: internal,
+		Errors: ve,
 	}
 }
 
@@ -53,8 +53,8 @@ func (rve RESTValidationError) Error() string {
 	return rve.Message
 }
 
-func (rve RESTValidationError) SetTraceID(traceID string) RESTValidationError {
-	rve.RESTStandardError.TraceID = traceID
+func (rve RESTValidationError) SetTraceID(id string) RESTValidationError {
+	rve.RESTStandardError.TraceID = id
 	return rve
 }
 
