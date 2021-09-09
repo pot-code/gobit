@@ -15,6 +15,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
+	github.com/stretchr/testify v1.7.0
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.18.1
 	golang.org/x/text v0.3.6

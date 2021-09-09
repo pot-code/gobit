@@ -57,7 +57,7 @@ func NewConfigManager(options ...ConfigOption) *ConfigManager {
 	cm := &ConfigManager{
 		envPrefix:  "GO",
 		configName: "config",
-		configType: "yml,",
+		configType: "yml",
 		configPaths: map[string]struct{}{
 			".": {},
 		},

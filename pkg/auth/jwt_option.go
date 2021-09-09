@@ -16,14 +16,14 @@ func (o optionFunc) apply(jp *JwtProvider) error {
 	return o(jp)
 }
 
-func SetJwtMethod(method jwt.SigningMethod) JwtOption {
+func WithJwtMethod(method jwt.SigningMethod) JwtOption {
 	return optionFunc(func(jp *JwtProvider) error {
 		jp.method = method
 		return nil
 	})
 }
 
-func SetJwtRSAPublicKey(pem []byte) JwtOption {
+func WithJwtRSAPublicKey(pem []byte) JwtOption {
 	return optionFunc(func(jp *JwtProvider) error {
 		pk, err := jwt.ParseRSAPublicKeyFromPEM(pem)
 		if err != nil {
@@ -34,7 +34,7 @@ func SetJwtRSAPublicKey(pem []byte) JwtOption {
 	})
 }
 
-func SetJwtRSAPrivate(pem []byte, password string) JwtOption {
+func WithJwtRSAPrivateKey(pem []byte, password string) JwtOption {
 	return optionFunc(func(jp *JwtProvider) error {
 		pk, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword(pem, password)
 		if err != nil {
