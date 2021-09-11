@@ -1,4 +1,4 @@
-package util
+package config
 
 import (
 	"log"
@@ -42,9 +42,9 @@ func WithEnvPrefix(prefix string) ConfigOption {
 	})
 }
 
-var (
+// var (
 // ErrNoConfigFileFound = errors.New("no config file found")
-)
+// )
 
 type ConfigManager struct {
 	configName  string
