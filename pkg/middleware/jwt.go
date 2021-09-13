@@ -22,7 +22,7 @@ type RefreshTokenOption struct {
 }
 
 // VerifyRefreshToken validate refresh JWT
-func VerifyRefreshToken(jp *auth.JwtProvider, options RefreshTokenOption) echo.MiddlewareFunc {
+func VerifyRefreshToken(jp *auth.JwtAuth, options RefreshTokenOption) echo.MiddlewareFunc {
 	skipper := func(string) bool { return false }
 	echoKey := DefaultRefreshTokenEchoKey
 	tokenName := "refresh_token"
@@ -65,7 +65,7 @@ type ValidateTokenOption struct {
 }
 
 // VerifyRefreshToken validate normal JWT
-func VerifyAccessToken(jp *auth.JwtProvider, options ValidateTokenOption) echo.MiddlewareFunc {
+func VerifyAccessToken(jp *auth.JwtAuth, options ValidateTokenOption) echo.MiddlewareFunc {
 	skipper := func(string) bool { return false }
 	contextKey := DefaultTokenContextKey
 

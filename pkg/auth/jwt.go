@@ -6,15 +6,15 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-// JwtProvider .
-type JwtProvider struct {
+// JwtAuth .
+type JwtAuth struct {
 	signKey     interface{}
 	validateKey interface{}
 	method      jwt.SigningMethod
 }
 
-func NewJwtProvider(secret []byte, options ...JwtOption) (*JwtProvider, error) {
-	jp := &JwtProvider{
+func NewJwtAuth(secret []byte, options ...JwtOption) (*JwtAuth, error) {
+	jp := &JwtAuth{
 		method:      jwt.SigningMethodHS256,
 		signKey:     secret,
 		validateKey: secret,
@@ -28,13 +28,13 @@ func NewJwtProvider(secret []byte, options ...JwtOption) (*JwtProvider, error) {
 }
 
 // Sign sign token
-func (jp *JwtProvider) Sign(claims jwt.Claims) (string, error) {
+func (jp *JwtAuth) Sign(claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jp.method, claims)
 	return token.SignedString(jp.signKey)
 }
 
 // Validate validate token string, error is not nil if not passed
-func (jp *JwtProvider) Validate(tokenStr string) (jwt.Claims, error) {
+func (jp *JwtAuth) Validate(tokenStr string) (jwt.Claims, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return jp.validateKey, nil
 	})
@@ -45,7 +45,7 @@ func (jp *JwtProvider) Validate(tokenStr string) (jwt.Claims, error) {
 }
 
 // GenerateTokenStr generate token from given data
-func (jp *JwtProvider) GenerateTokenStr(data map[string]interface{}, exp time.Duration) (string, error) {
+func (jp *JwtAuth) GenerateTokenStr(data map[string]interface{}, exp time.Duration) (string, error) {
 	expires := time.Now().Add(exp).Unix()
 	claims := jwt.MapClaims{
 		"exp": expires,

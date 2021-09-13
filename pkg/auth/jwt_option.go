@@ -7,24 +7,24 @@ import (
 )
 
 type JwtOption interface {
-	apply(*JwtProvider) error
+	apply(*JwtAuth) error
 }
 
-type optionFunc func(*JwtProvider) error
+type optionFunc func(*JwtAuth) error
 
-func (o optionFunc) apply(jp *JwtProvider) error {
+func (o optionFunc) apply(jp *JwtAuth) error {
 	return o(jp)
 }
 
 func WithJwtMethod(method jwt.SigningMethod) JwtOption {
-	return optionFunc(func(jp *JwtProvider) error {
+	return optionFunc(func(jp *JwtAuth) error {
 		jp.method = method
 		return nil
 	})
 }
 
 func WithJwtRSAPublicKey(pem []byte) JwtOption {
-	return optionFunc(func(jp *JwtProvider) error {
+	return optionFunc(func(jp *JwtAuth) error {
 		pk, err := jwt.ParseRSAPublicKeyFromPEM(pem)
 		if err != nil {
 			return fmt.Errorf("failed to parse provided public key: %w", err)
@@ -35,7 +35,7 @@ func WithJwtRSAPublicKey(pem []byte) JwtOption {
 }
 
 func WithJwtRSAPrivateKey(pem []byte, password string) JwtOption {
-	return optionFunc(func(jp *JwtProvider) error {
+	return optionFunc(func(jp *JwtAuth) error {
 		pk, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword(pem, password)
 		if err != nil {
 			return fmt.Errorf("failed to parse provided private key: %w", err)
