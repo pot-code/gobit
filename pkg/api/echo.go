@@ -32,7 +32,7 @@ type Route struct {
 	Middlewares []echo.MiddlewareFunc
 }
 
-func CreateEndpoint(app *echo.Echo, def *Endpoint) {
+func ApplyEndpoint(app *echo.Echo, def *Endpoint) {
 	type RESTMethod func(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 
 	version := "/"
