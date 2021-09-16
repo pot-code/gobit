@@ -19,10 +19,14 @@ import (
 )
 
 func NewEcsTracerProvider(tc *TraceConfig, b *config.BaseConfig, lm *util.LifecycleManager) *apm.Tracer {
+	if tc == nil {
+		panic("TraceConfig is nil")
+	}
+
 	os.Setenv("ELASTIC_APM_SERVER_URL", tc.URL)
 
 	_, err := transport.InitDefault()
-	util.HandleFatalError("failed to init apm default", err)
+	util.HandlePanicError("failed to init apm default", err)
 
 	at := apm.DefaultTracer
 	at.Service.Environment = b.Env
@@ -39,13 +43,17 @@ func NewEcsTracerProvider(tc *TraceConfig, b *config.BaseConfig, lm *util.Lifecy
 	})
 	lm.OnExit(func(ctx context.Context) {
 		at.Close()
-		log.Println("shutdown tracer")
+		log.Println("[apm.Tracer] shutdown tracer")
 	})
 
 	return at
 }
 
 func NewZipkinTracerProvider(tc *TraceConfig, b *config.BaseConfig, lm *util.LifecycleManager) *zipkin.Tracer {
+	if tc == nil {
+		panic("TraceConfig is nil")
+	}
+
 	reporter := reporterhttp.NewReporter(tc.URL)
 	zt, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(&model.Endpoint{
 		ServiceName: b.AppID,
@@ -54,6 +62,7 @@ func NewZipkinTracerProvider(tc *TraceConfig, b *config.BaseConfig, lm *util.Lif
 	util.HandleFatalError("failed to init zipkin tracer", err)
 
 	lm.OnExit(func(ctx context.Context) {
+		log.Println("[zipkin.Tracer] shutdown tracer")
 		reporter.Close()
 	})
 

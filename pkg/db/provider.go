@@ -11,8 +11,12 @@ import (
 )
 
 func NewSqlxProvider(dc *DatabaseConfig, lm *util.LifecycleManager) *sqlx.DB {
+	if dc == nil {
+		panic("DatabaseConfig is nil")
+	}
+
 	conn, err := sqlx.Connect(dc.Driver, dc.Dsn)
-	util.HandleFatalError("failed to create DB connection", err)
+	util.HandlePanicError("failed to create DB connection", err)
 
 	conn.DB.SetMaxOpenConns(int(dc.MaxConn))
 	conn.DB.SetMaxIdleConns(int(dc.MaxConn) >> 2)
@@ -21,13 +25,17 @@ func NewSqlxProvider(dc *DatabaseConfig, lm *util.LifecycleManager) *sqlx.DB {
 		return conn.PingContext(ctx)
 	})
 	lm.OnExit(func(ctx context.Context) {
-		log.Println("close sqlx DB connection")
+		log.Println("[sqlx.DB] close DB connection")
 		conn.Close()
 	})
 	return conn
 }
 
 func NewRedisCacheProvider(cc *CacheConfig, lm *util.LifecycleManager) *redis.Client {
+	if cc == nil {
+		panic("CacheConfig is nil")
+	}
+
 	addr := fmt.Sprintf("%s:%d", cc.Host, cc.Port)
 	rc := redis.NewClient(&redis.Options{
 		Addr:     addr,
@@ -38,7 +46,7 @@ func NewRedisCacheProvider(cc *CacheConfig, lm *util.LifecycleManager) *redis.Cl
 		return rc.Ping(ctx).Err()
 	})
 	lm.OnExit(func(ctx context.Context) {
-		log.Println("close redis connection")
+		log.Println("[redis.Client] close connection")
 		rc.Close()
 	})
 	return rc

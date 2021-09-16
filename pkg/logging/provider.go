@@ -11,9 +11,13 @@ import (
 )
 
 func NewZapLoggerProvider(lc *LoggingConfig, lm *util.LifecycleManager) *zap.Logger {
+	if lc == nil {
+		panic("LoggingConfig is nil")
+	}
+
 	ec := NewEcsConfig()
 	enabler, err := GetLevelEnabler(lc.Level)
-	util.HandleFatalError("failed to create logger", err)
+	util.HandlePanicError("failed to create logger", err)
 
 	var zc zapcore.Encoder
 	if lc.Format == "json" {
@@ -28,16 +32,14 @@ func NewZapLoggerProvider(lc *LoggingConfig, lm *util.LifecycleManager) *zap.Log
 		out = os.Stderr
 	} else {
 		out, err = NewFileSyncer(p)
-		if err != nil {
-			log.Fatalf("failed to create logger: %s", err)
-		}
+		util.HandlePanicError("failed to create logger", err)
 	}
 
 	core := zapcore.NewCore(zc, out, enabler)
 	logger := zap.New(core)
 
 	lm.OnExit(func(ctx context.Context) {
-		log.Println("sync zap logger")
+		log.Println("[zap.Logger] sync logger")
 		logger.Sync()
 	})
 

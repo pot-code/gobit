@@ -24,3 +24,9 @@ func HandleFatalError(message string, err error) {
 		log.Fatalf("%s: %v", message, err)
 	}
 }
+
+func HandlePanicError(message string, err error) {
+	if err != nil {
+		panic(fmt.Errorf("%s: %w", message, err))
+	}
+}
