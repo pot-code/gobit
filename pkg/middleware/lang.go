@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pot-code/gobit/pkg/api"
 	"github.com/pot-code/gobit/pkg/context"
+	"github.com/pot-code/gobit/pkg/util"
 	"golang.org/x/text/language"
 )
 
@@ -29,10 +30,8 @@ func ParseAcceptLanguage(option ParseAcceptLanguageOption) echo.MiddlewareFunc {
 	matcher := language.NewMatcher(tags)
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			lang := c.Request().Header.Get("Accept-Language")
-			tag, _ := language.MatchStrings(matcher, lang)
-			base, _ := tag.Base()
-			api.WithContextValue(c, key, base.String())
+			lang := util.ParseLangFromHttpRequest(c.Request(), matcher)
+			api.WithContextValue(c, key, lang)
 			return next(c)
 		}
 	}
