@@ -7,7 +7,7 @@ import (
 	"github.com/pot-code/gobit/pkg/validate"
 )
 
-func ValidateFailedResponse(c echo.Context, err *validate.ValidationError) error {
+func ValidateFailedResponse(c echo.Context, err *validate.ValidationErrors) error {
 	return c.JSON(http.StatusBadRequest, NewRESTValidationError(ErrFailedValidate.Error(), err))
 }
 

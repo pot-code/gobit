@@ -37,10 +37,10 @@ func (re RESTStandardError) SetTraceID(id string) RESTStandardError {
 // RESTValidationError standard validation error
 type RESTValidationError struct {
 	RESTStandardError
-	Errors *validate.ValidationError `json:"errors"`
+	Errors *validate.ValidationErrors `json:"errors"`
 }
 
-func NewRESTValidationError(msg string, ve *validate.ValidationError) *RESTValidationError {
+func NewRESTValidationError(msg string, ve *validate.ValidationErrors) *RESTValidationError {
 	return &RESTValidationError{
 		RESTStandardError: RESTStandardError{
 			Message: msg,
