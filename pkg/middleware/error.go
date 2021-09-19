@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -18,12 +17,8 @@ type ErrorHandlingOption struct {
 // ErrorHandling auto recovery and handle the errors returned from handlers
 func ErrorHandling(option ErrorHandlingOption) echo.MiddlewareFunc {
 	handler := func(c echo.Context, e error) {
-		traceID := c.Response().Header().Get(echo.HeaderXRequestID)
 		msg := api.ErrInternalError.Error()
-		log.Printf("trace.id=%s error=%s", traceID, e.Error())
-		c.JSON(http.StatusInternalServerError,
-			api.NewRESTStandardError(msg).SetTraceID(traceID),
-		)
+		c.JSON(http.StatusInternalServerError, api.NewRESTStandardError(msg))
 	}
 
 	if option.Handler != nil {

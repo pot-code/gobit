@@ -5,30 +5,28 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	gobit "github.com/pot-code/gobit/pkg"
 	"github.com/pot-code/gobit/pkg/api"
 	"github.com/pot-code/gobit/pkg/auth"
+	"github.com/pot-code/gobit/pkg/context"
 )
 
-var DefaultTokenContextKey = gobit.AppContextKey("user")
-
-var DefaultRefreshTokenEchoKey = "refresh"
+const RefreshTokenKey context.AppContextKey = "refresh_token"
 
 // RefreshTokenOption ...
 type RefreshTokenOption struct {
-	Skipper        func(uri string) bool
-	EchoContextKey string
-	TokenName      string
+	Skipper    func(uri string) bool
+	ContextKey string
+	TokenName  string
 }
 
 // VerifyRefreshToken validate refresh JWT
 func VerifyRefreshToken(jp *auth.JwtAuth, options RefreshTokenOption) echo.MiddlewareFunc {
 	skipper := func(string) bool { return false }
-	echoKey := DefaultRefreshTokenEchoKey
+	ctxKey := RefreshTokenKey
 	tokenName := "refresh_token"
 
-	if options.EchoContextKey != "" {
-		echoKey = options.EchoContextKey
+	if options.ContextKey != "" {
+		ctxKey = context.AppContextKey(options.ContextKey)
 	}
 	if options.Skipper != nil {
 		skipper = options.Skipper
@@ -50,7 +48,7 @@ func VerifyRefreshToken(jp *auth.JwtAuth, options RefreshTokenOption) echo.Middl
 
 			token, err := jp.Validate(tokenStr.Value)
 			if err == nil {
-				c.Set(echoKey, token)
+				api.WithContextValue(c, ctxKey, token)
 				return next(c)
 			}
 			return c.NoContent(http.StatusUnauthorized)
@@ -58,19 +56,21 @@ func VerifyRefreshToken(jp *auth.JwtAuth, options RefreshTokenOption) echo.Middl
 	}
 }
 
+const TokenKey context.AppContextKey = "token"
+
 // ValidateTokenOption ...
 type ValidateTokenOption struct {
 	Skipper    func(uri string) bool
-	ContextKey gobit.AppContextKey
+	ContextKey string
 }
 
 // VerifyRefreshToken validate normal JWT
 func VerifyAccessToken(jp *auth.JwtAuth, options ValidateTokenOption) echo.MiddlewareFunc {
 	skipper := func(string) bool { return false }
-	contextKey := DefaultTokenContextKey
+	ctxKey := TokenKey
 
 	if options.ContextKey != "" {
-		contextKey = options.ContextKey
+		ctxKey = context.AppContextKey(options.ContextKey)
 	}
 	if options.Skipper != nil {
 		skipper = options.Skipper
@@ -90,7 +90,7 @@ func VerifyAccessToken(jp *auth.JwtAuth, options ValidateTokenOption) echo.Middl
 			tokenStr := strings.TrimPrefix(auth, "Bearer ")
 			token, err := jp.Validate(tokenStr)
 			if err == nil {
-				api.WithContextValue(c, contextKey, token)
+				api.WithContextValue(c, ctxKey, token)
 				return next(c)
 			}
 			return c.NoContent(http.StatusUnauthorized)

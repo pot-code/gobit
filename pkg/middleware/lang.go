@@ -2,26 +2,26 @@ package middleware
 
 import (
 	"github.com/labstack/echo/v4"
-	gobit "github.com/pot-code/gobit/pkg"
 	"github.com/pot-code/gobit/pkg/api"
+	"github.com/pot-code/gobit/pkg/context"
 	"golang.org/x/text/language"
 )
 
-var DefaultLangContextKey = gobit.AppContextKey("lang")
+const LangKey context.AppContextKey = "lang"
 
 type ParseAcceptLanguageOption struct {
-	ContextKey gobit.AppContextKey
+	ContextKey string
 	Lang       []language.Tag
 }
 
 func ParseAcceptLanguage(option ParseAcceptLanguageOption) echo.MiddlewareFunc {
-	key := DefaultLangContextKey
+	key := LangKey
 	tags := []language.Tag{
 		language.English,
 		language.Chinese,
 	}
 	if option.ContextKey != "" {
-		key = option.ContextKey
+		key = context.AppContextKey(option.ContextKey)
 	}
 	if option.Lang != nil {
 		tags = option.Lang

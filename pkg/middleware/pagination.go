@@ -2,23 +2,22 @@ package middleware
 
 import (
 	"github.com/labstack/echo/v4"
-	gobit "github.com/pot-code/gobit/pkg"
 	"github.com/pot-code/gobit/pkg/api"
+	"github.com/pot-code/gobit/pkg/context"
 	"github.com/pot-code/gobit/pkg/validate"
 )
 
-var DefaultPaginationEchoKey = "pagination"
+const PaginationKey context.AppContextKey = "pagination"
 
 type PaginationOption struct {
-	EchoKey string
-	LangKey gobit.AppContextKey
+	ContextKey context.AppContextKey
 }
 
 func CursorPagination(v *validate.ValidatorV10, option PaginationOption) echo.MiddlewareFunc {
-	key := DefaultPaginationEchoKey
+	key := PaginationKey
 
-	if option.EchoKey != "" {
-		key = option.EchoKey
+	if option.ContextKey != "" {
+		key = option.ContextKey
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -30,7 +29,7 @@ func CursorPagination(v *validate.ValidatorV10, option PaginationOption) echo.Mi
 			if err := v.Struct(pagination); err != nil {
 				return api.ValidateFailedResponse(c, err)
 			}
-			c.Set(key, pagination)
+			api.WithContextValue(c, key, pagination)
 			return next(c)
 		}
 	}
