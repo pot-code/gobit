@@ -18,8 +18,6 @@ func NewEcsConfig() zapcore.EncoderConfig {
 	ec.TimeKey = "@timestamp"
 	ec.MessageKey = "message"
 	ec.LevelKey = "log.level"
-	ec.CallerKey = "log.origin.file.line"
-	ec.StacktraceKey = "error.stack_trace"
 	return ec
 }
 

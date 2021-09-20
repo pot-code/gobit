@@ -7,7 +7,7 @@ type DatabaseConfig struct {
 }
 
 type CacheConfig struct {
-	Host     string `mapstructure:"host" yaml:"host"`         // bind host address
-	Port     int    `mapstructure:"port" yaml:"port"`         // bind listen port
-	Password string `mapstructure:"password" yaml:"password"` // password for security reasons
+	Host     string `validate:"required" mapstructure:"host" yaml:"host"` // bind host address
+	Port     int    `validate:"required" mapstructure:"port" yaml:"port"` // bind listen port
+	Password string `mapstructure:"password" yaml:"password"`             // password for security reasons
 }
