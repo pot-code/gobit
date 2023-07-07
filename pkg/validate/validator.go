@@ -14,7 +14,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-type LocaleRegister func(v *validator.Validate, trans ut.Translator) error
+type LocaleRegister func(v *validator.Validate, t ut.Translator) error
 
 type ValidatorBuilderSchema struct {
 	localeMap     map[string]LocaleRegister
@@ -22,7 +22,7 @@ type ValidatorBuilderSchema struct {
 	defaultLocale language.Tag
 }
 
-func NewValidator() *ValidatorBuilderSchema {
+func New() *ValidatorBuilderSchema {
 	localeTrans := []locales.Translator{en.New()}
 	localeMap := map[string]LocaleRegister{
 		getLangTagString(language.English): func(v *validator.Validate, utt ut.Translator) error {
@@ -67,16 +67,22 @@ func (s *ValidatorBuilderSchema) Build() *Validator {
 
 	utt := ut.New(s.localeTrans[0], s.localeTrans...)
 	for locale, register := range s.localeMap {
-		trans, _ := utt.GetTranslator(locale)
-		err := register(v, trans)
+		t, _ := utt.GetTranslator(locale)
+		err := register(v, t)
 		if err != nil {
-			panic(fmt.Errorf("failed to register locale %s for validator: %w", locale, err))
+			panic(fmt.Errorf("failed to register locale '%s' for validator: %w", locale, err))
 		}
+	}
+
+	locale := getLangTagString(s.defaultLocale)
+	translator, ok := utt.GetTranslator(locale)
+	if !ok {
+		panic(fmt.Errorf("failed to get default translator for locale '%s'", locale))
 	}
 
 	return &Validator{
 		v:          v,
-		translator: utt.GetFallback(),
+		translator: translator,
 		utt:        utt,
 	}
 }
