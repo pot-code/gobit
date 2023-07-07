@@ -2,9 +2,10 @@ package validate
 
 import (
 	"fmt"
+	"strings"
+
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	"strings"
 )
 
 type ValidationResult struct {
@@ -13,7 +14,7 @@ type ValidationResult struct {
 }
 
 func NewValidationResult(field string, reason string) *ValidationResult {
-	return &ValidationResult{field, reason}
+	return &ValidationResult{field, strings.ReplaceAll(reason, field, "")}
 }
 
 func (vr *ValidationResult) Field() string {
@@ -30,11 +31,20 @@ func (vr *ValidationResult) String() string {
 
 type ValidationError []*ValidationResult
 
-func FromValidatorErrors(errs validator.ValidationErrors, translator ut.Translator) ValidationError {
+func FromValidatorErrors(err validator.ValidationErrors, t ut.Translator) ValidationError {
 	var ve []*ValidationResult
-	for _, err := range errs {
-		reason := err.Translate(translator)
+	for _, err := range err {
+		reason := err.Translate(t)
 		ve = append(ve, NewValidationResult(err.Field(), reason))
+	}
+	return ValidationError(ve)
+}
+
+func FromVarValidatorErrors(name string, err validator.ValidationErrors, t ut.Translator) ValidationError {
+	var ve []*ValidationResult
+	for _, err := range err {
+		reason := err.Translate(t)
+		ve = append(ve, NewValidationResult(name, reason))
 	}
 	return ValidationError(ve)
 }

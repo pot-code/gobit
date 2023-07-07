@@ -102,7 +102,7 @@ func (vv Validator) Struct(s interface{}) ValidationError {
 
 func (vv Validator) Var(rule, name string, v interface{}) ValidationError {
 	if err := vv.v.Var(v, rule); err != nil {
-		return FromValidatorErrors(err.(validator.ValidationErrors), vv.translator)
+		return FromVarValidatorErrors(name, err.(validator.ValidationErrors), vv.translator)
 
 	}
 	return nil
