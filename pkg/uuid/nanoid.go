@@ -16,26 +16,10 @@ func NewNanoIDGenerator(length int) *NanoIDGenerator {
 	return &NanoIDGenerator{Length: length}
 }
 
-func (ns *NanoIDGenerator) V5(namespace, name string) (string, error) {
-	return "", ErrNotImplemented
-}
-
-func (ns *NanoIDGenerator) V4() (string, error) {
+func (ns *NanoIDGenerator) UUID() (string, error) {
 	uuid, err := gonanoid.Nanoid(ns.Length)
 	if err != nil {
 		return "", err
 	}
 	return uuid, err
-}
-
-func (ns *NanoIDGenerator) V3(namespace, name string) (string, error) {
-	return "", ErrNotImplemented
-}
-
-func (ns *NanoIDGenerator) V2(domain byte) (string, error) {
-	return "", ErrNotImplemented
-}
-
-func (ns *NanoIDGenerator) V1() (string, error) {
-	return "", ErrNotImplemented
 }

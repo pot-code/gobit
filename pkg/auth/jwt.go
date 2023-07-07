@@ -6,7 +6,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-// JwtAuth .
 type JwtAuth struct {
 	signKey     interface{}
 	validateKey interface{}
@@ -14,29 +13,29 @@ type JwtAuth struct {
 }
 
 func NewJwtAuth(secret []byte, options ...JwtOption) (*JwtAuth, error) {
-	jp := &JwtAuth{
+	auth := &JwtAuth{
 		method:      jwt.SigningMethodHS256,
 		signKey:     secret,
 		validateKey: secret,
 	}
 	for _, option := range options {
-		if err := option.apply(jp); err != nil {
+		if err := option.apply(auth); err != nil {
 			return nil, err
 		}
 	}
-	return jp, nil
+	return auth, nil
 }
 
 // Sign sign token
-func (jp *JwtAuth) Sign(claims jwt.Claims) (string, error) {
-	token := jwt.NewWithClaims(jp.method, claims)
-	return token.SignedString(jp.signKey)
+func (auth *JwtAuth) Sign(claims jwt.Claims) (string, error) {
+	token := jwt.NewWithClaims(auth.method, claims)
+	return token.SignedString(auth.signKey)
 }
 
 // Validate validate token string, error is not nil if not passed
-func (jp *JwtAuth) Validate(tokenStr string) (jwt.Claims, error) {
+func (auth *JwtAuth) Validate(tokenStr string) (jwt.Claims, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		return jp.validateKey, nil
+		return auth.validateKey, nil
 	})
 	if err != nil {
 		return nil, err
@@ -45,7 +44,7 @@ func (jp *JwtAuth) Validate(tokenStr string) (jwt.Claims, error) {
 }
 
 // GenerateTokenStr generate token from given data
-func (jp *JwtAuth) GenerateTokenStr(data map[string]interface{}, exp time.Duration) (string, error) {
+func (auth *JwtAuth) GenerateTokenStr(data map[string]interface{}, exp time.Duration) (string, error) {
 	expires := time.Now().Add(exp).Unix()
 	claims := jwt.MapClaims{
 		"exp": expires,
@@ -53,5 +52,5 @@ func (jp *JwtAuth) GenerateTokenStr(data map[string]interface{}, exp time.Durati
 	for k, v := range data {
 		claims[k] = v
 	}
-	return jp.Sign(claims)
+	return auth.Sign(claims)
 }
