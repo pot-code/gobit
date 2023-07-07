@@ -26,7 +26,7 @@ func (vr *ValidationResult) Reason() string {
 }
 
 func (vr *ValidationResult) String() string {
-	return fmt.Sprintf("%s: %s", vr.field, vr.reason)
+	return fmt.Sprintf("%s %s", vr.field, vr.reason)
 }
 
 type ValidationError []*ValidationResult
