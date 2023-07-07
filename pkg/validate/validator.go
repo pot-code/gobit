@@ -94,8 +94,8 @@ func (vv Validator) Struct(s interface{}) ValidationError {
 	return nil
 }
 
-func (vv Validator) Var(v interface{}, name, tag string) ValidationError {
-	if err := vv.v.Var(v, tag); err != nil {
+func (vv Validator) Var(rule, name string, v interface{}) ValidationError {
+	if err := vv.v.Var(v, rule); err != nil {
 		return FromValidatorErrors(err.(validator.ValidationErrors), vv.translator)
 
 	}
