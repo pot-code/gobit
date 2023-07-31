@@ -25,7 +25,7 @@ func (vr *ValidationResult) Reason() string {
 	return vr.reason
 }
 
-func (vr *ValidationResult) String() string {
+func (vr *ValidationResult) Error() string {
 	return fmt.Sprintf("%s %s", vr.field, vr.reason)
 }
 
@@ -52,7 +52,7 @@ func FromVarValidatorErrors(name string, err validator.ValidationErrors, t ut.Tr
 func (ve ValidationError) Error() string {
 	var msg []string
 	for _, e := range ve {
-		msg = append(msg, e.String())
+		msg = append(msg, e.Error())
 	}
 	return strings.Join(msg, "\n")
 }

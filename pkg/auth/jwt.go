@@ -26,16 +26,14 @@ func NewJwtAuth(secret []byte, options ...JwtOption) (*JwtAuth, error) {
 	return auth, nil
 }
 
-// Sign sign token
-func (auth *JwtAuth) Sign(claims jwt.Claims) (string, error) {
-	token := jwt.NewWithClaims(auth.method, claims)
-	return token.SignedString(auth.signKey)
+func (j *JwtAuth) Sign(claims jwt.Claims) (string, error) {
+	token := jwt.NewWithClaims(j.method, claims)
+	return token.SignedString(j.signKey)
 }
 
-// Validate validate token string, error is not nil if not passed
-func (auth *JwtAuth) Validate(tokenStr string) (jwt.Claims, error) {
+func (j *JwtAuth) Validate(tokenStr string) (jwt.Claims, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		return auth.validateKey, nil
+		return j.validateKey, nil
 	})
 	if err != nil {
 		return nil, err
@@ -43,8 +41,7 @@ func (auth *JwtAuth) Validate(tokenStr string) (jwt.Claims, error) {
 	return token.Claims, nil
 }
 
-// GenerateTokenStr generate token from given data
-func (auth *JwtAuth) GenerateTokenStr(data map[string]interface{}, exp time.Duration) (string, error) {
+func (j *JwtAuth) GenerateTokenStr(data map[string]interface{}, exp time.Duration) (string, error) {
 	expires := time.Now().Add(exp).Unix()
 	claims := jwt.MapClaims{
 		"exp": expires,
@@ -52,5 +49,5 @@ func (auth *JwtAuth) GenerateTokenStr(data map[string]interface{}, exp time.Dura
 	for k, v := range data {
 		claims[k] = v
 	}
-	return auth.Sign(claims)
+	return j.Sign(claims)
 }
