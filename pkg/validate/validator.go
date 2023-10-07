@@ -49,7 +49,7 @@ func (s *ValidatorBuilderSchema) DefaultLocale(locale language.Tag) *ValidatorBu
 	return s
 }
 
-func (s *ValidatorBuilderSchema) Build() *Validator {
+func (s *ValidatorBuilderSchema) Create() *Validator {
 	v := validator.New()
 	v.RegisterTagNameFunc(func(sf reflect.StructField) string {
 		name := sf.Tag.Get("json")
