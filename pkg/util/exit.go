@@ -10,34 +10,14 @@ import (
 
 type ExitHandler func(ctx context.Context)
 
-type OnlineProbe func(ctx context.Context) error
-
 type ExitManager struct {
 	handlers []ExitHandler
-	probes   []OnlineProbe
 }
 
 func NewExitManager() *ExitManager {
 	return &ExitManager{
 		handlers: []ExitHandler{},
 	}
-}
-
-func (em *ExitManager) AddLivenessProbe(p OnlineProbe) {
-	em.probes = append(em.probes, p)
-}
-
-// Probe check if all services are alive, return error if one is dead
-func (em *ExitManager) Probe(timeout time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	for _, p := range em.probes {
-		if err := p(ctx); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (em *ExitManager) OnExit(handler ExitHandler) {
